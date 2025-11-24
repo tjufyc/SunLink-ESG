@@ -136,14 +136,25 @@
             </div>
         </div>
 
-        <!-- 1.5 调查问卷 -->
+        <!-- 1.5 调查问卷 (更新：含知情同意书) -->
         <div id="screen-survey" class="hidden flex-col h-full fade-in absolute inset-0 z-20 bg-white">
             <div class="header-spacer"></div>
             <div class="px-6 pt-4 flex-1 overflow-y-auto pb-32">
+                
+                <!-- 知情同意书 -->
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-6 text-xs text-slate-600 leading-relaxed shadow-sm">
+                    <h4 class="font-bold text-blue-800 mb-2 text-sm">🔬 实验研究知情同意书</h4>
+                    <p class="mb-2">您即将参与的是一项关于国际工程 ESG 决策行为的学术研究实验，由天津大学全球工程经营实验室开发。</p>
+                    <ul class="list-disc pl-4 space-y-1 text-slate-500">
+                        <li><strong>匿名性：</strong>您的所有回答将被严格保密，系统仅记录去标识化的决策数据用于科研统计分析。</li>
+                        <li><strong>自愿性：</strong>参与本实验完全自愿，您有权在任何时候关闭页面退出。</li>
+                        <li><strong>无风险：</strong>本实验不涉及任何商业利益或个人隐私风险。</li>
+                    </ul>
+                </div>
+
                 <h2 class="text-xl font-black text-slate-800 mb-2">📋 实验前小调查</h2>
-                <p class="text-xs text-slate-500 mb-6 bg-slate-50 p-2 rounded">
-                    开始之前，让我们先了解一下你。<br>
-                    *所有信息都是匿名处理，仅用于科研统计，无需顾虑。
+                <p class="text-xs text-slate-400 mb-6">
+                    开始之前，请先回答以下问题。
                 </p>
                 
                 <form id="survey-form" onsubmit="submitSurvey(event)">
@@ -189,8 +200,8 @@
                 </form>
             </div>
             <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30 pb-safe-area">
-                <button onclick="submitSurvey()" id="btn-survey" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    提交并继续
+                <button onclick="submitSurvey()" id="btn-survey" class="w-full bg-slate-800 text-white text-sm font-bold py-4 rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed leading-tight" disabled>
+                    同意参与本实验研究，提交并继续
                 </button>
             </div>
         </div>
@@ -534,12 +545,12 @@
 
         let decisionPath = []; // 记录决策路径
 
-        // --- 修复: LeanCloud Init (使用国际版 Key，解决 GitHub Pages 跨域问题) ---
+        // --- 修复: LeanCloud Init (使用新提供的国际版 Key) ---
         try {
             const lcConfig = {
-                appId: "mCdbC5jA5k0w3yE3YF689if0-MdYXbMMI", 
-                appKey: "eS3bK5w4yZ5x6C7v8B9n0m1L",          
-                serverURLs: "https://mcdbc5ja.api.lncldglobal.com" 
+                appId: "esL6o1jmpB3rVGlkjsE6OFRu-MdYXbMMI", 
+                appKey: "B1fDIAC8C2dXizdlslG7Cl1D",          
+                serverURLs: "https://esl6o1jm.api.lncldglobal.com" 
             };
             if (typeof AV !== 'undefined') {
                 AV.init(lcConfig);
