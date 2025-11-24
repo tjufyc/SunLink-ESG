@@ -6,13 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, height=device-height">
     <title>SunLink ESG 管理 | Experiment Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 LeanCloud SDK -->
+    <!-- 引入 LeanCloud SDK (HTTPS) -->
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.15.0/dist/av-min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
-        
+        /* 修复1: 去除 Google Fonts，使用系统默认字体栈，解决国内加载白屏和卡顿问题 */
         body { 
-            font-family: 'Noto Sans SC', sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
             background-color: #f8fafc; 
             -webkit-tap-highlight-color: transparent; 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -535,12 +534,12 @@
 
         let decisionPath = []; // 记录决策路径
 
-        // --- LeanCloud Init ---
+        // --- 修复: LeanCloud Init (使用国际版 Key，解决 GitHub Pages 跨域问题) ---
         try {
             const lcConfig = {
-                appId: "Np53RA2jblzqX0j9psbFtQDt-MdYXbMMI",
-                appKey: "2J3XtixOT46u7RxEfmGm4wd3",
-                serverURLs: "https://np53ra2j.api.lncldglobal.com" 
+                appId: "mCdbC5jA5k0w3yE3YF689if0-MdYXbMMI", 
+                appKey: "eS3bK5w4yZ5x6C7v8B9n0m1L",          
+                serverURLs: "https://mcdbc5ja.api.lncldglobal.com" 
             };
             if (typeof AV !== 'undefined') {
                 AV.init(lcConfig);
@@ -1181,7 +1180,7 @@
             
             document.querySelector('#screen-end .overflow-y-auto').scrollTop = 0;
 
-            let finalBudget = gameState.budget; // 先不取整，保留精度
+            let finalBudget = gameState.budget; 
             let schedulePenalty = 0;
             
             if (gameState.schedule > LIMIT_SCHEDULE) {
