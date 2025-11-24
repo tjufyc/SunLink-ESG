@@ -1,0 +1,1354 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, height=device-height">
+    <title>SunLink ESG 管理 | Experiment Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 LeanCloud SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.15.0/dist/av-min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+        
+        body { 
+            font-family: 'Noto Sans SC', sans-serif; 
+            background-color: #f8fafc; 
+            -webkit-tap-highlight-color: transparent; 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        }
+        
+        .header-spacer { width: 100%; height: 140px; flex-shrink: 0; }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        .stat-float { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 1.5s forwards; opacity: 0; z-index: 60; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-30px) scale(1.2); opacity: 0; } }
+        .dice-roll { animation: spin 0.5s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .comp-table { width: 100%; font-size: 10px; border-collapse: collapse; margin-top: 10px; }
+        .comp-table th { background: #f1f5f9; color: #64748b; font-weight: bold; padding: 6px; text-align: center; border: 1px solid #e2e8f0; }
+        .comp-table td { padding: 6px; text-align: center; border: 1px solid #e2e8f0; } 
+        .comp-table tr.highlight { background: #eff6ff; font-weight: bold; color: #1e40af; }
+        .comp-table tr.avg-row { background: #f8fafc; color: #64748b; font-style: italic; }
+        
+        /* 矩阵表格样式 */
+        .matrix-table { width: 100%; border-collapse: collapse; font-size: 9px; text-align: center; }
+        .matrix-table th, .matrix-table td { border: 1px solid #cbd5e1; padding: 4px 2px; }
+        .matrix-table th { background: #e2e8f0; color: #334155; }
+        .matrix-highlight { background-color: #dbeafe; border: 2px solid #2563eb !important; font-weight: bold; }
+        .prob-row { font-size: 8px; color: #64748b; background: #f8fafc; }
+
+        /* 问卷样式 */
+        .likert-scale { display: flex; justify-content: space-between; margin-top: 8px; margin-bottom: 16px; }
+        .likert-opt { display: flex; flex-direction: column; items-center; text-align: center; cursor: pointer; width: 18%; }
+        .likert-circle { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; transition: all 0.2s; font-size: 10px; font-weight: bold; color: #64748b; }
+        .likert-opt.selected .likert-circle { background-color: #3b82f6; border-color: #3b82f6; color: white; transform: scale(1.1); }
+        .likert-label { font-size: 8px; color: #94a3b8; line-height: 1.2; }
+
+        /* 九宫格随机样式 */
+        .grid-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 100%; max-width: 300px; margin: 0 auto; }
+        .grid-cell { aspect-ratio: 1; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; flex-col; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; transition: all 0.1s; opacity: 0.5; }
+        .grid-cell.active { background: #3b82f6; color: white; transform: scale(1.05); opacity: 1; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5); border-color: #2563eb; z-index: 10; }
+        .grid-cell-text { font-size: 10px; font-weight: bold; text-align: center; }
+        .grid-cell-sub { font-size: 8px; opacity: 0.8; }
+
+        /* 情境描述卡片 */
+        .ctx-desc-card { font-size: 10px; color: #64748b; background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 4px; transition: all 0.3s; opacity: 0.7; }
+        .ctx-label { font-weight: bold; color: #334155; display: block; margin-bottom: 2px; }
+        
+        /* 高亮样式 */
+        .ctx-desc-card.highlighted {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            border-width: 2px;
+            color: #1e293b;
+            opacity: 1;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+        }
+        
+        .copyright-text { font-size: 9px; color: #cbd5e1; text-align: center; margin-top: 8px; font-family: sans-serif; }
+    </style>
+</head>
+<body class="flex flex-col text-slate-800 bg-slate-100">
+
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm border-b border-slate-200 z-50 px-3 py-2 w-full absolute top-0 left-0">
+        <div class="flex justify-between items-center mb-2 pt-safe-top mt-2"> 
+            <img src="logo.png" alt="SunLink" class="h-8 object-contain" onerror="this.src='https://placehold.co/100x40/3b82f6/ffffff?text=SunLink'">
+            <div class="text-xs text-slate-400 font-bold" id="level-indicator">Mission Briefing</div>
+        </div>
+        
+        <!-- 核心数值仪表盘 -->
+        <div class="grid grid-cols-3 gap-2 text-xs font-bold pb-1">
+            <div class="flex flex-col items-center bg-slate-50 p-1 rounded border border-slate-200 relative overflow-visible">
+                <span class="text-[10px] text-slate-400 scale-90">利润(万)</span>
+                <span id="val-budget" class="text-emerald-600 text-base">1000.00</span>
+                <div id="float-budget" class="absolute top-0 left-1/2 -translate-x-1/2"></div>
+            </div>
+            <div class="flex flex-col items-center bg-slate-50 p-1 rounded border border-slate-200 relative overflow-visible" id="box-schedule">
+                <span class="text-[10px] text-slate-400 scale-90">工期(月)</span>
+                <div class="flex items-baseline">
+                    <span id="val-schedule" class="text-blue-600 text-base">12.00</span>
+                    <span class="text-[10px] text-slate-300 font-normal ml-0.5">/16</span>
+                </div>
+                <div id="float-schedule" class="absolute top-0 left-1/2 -translate-x-1/2"></div>
+            </div>
+            <div class="flex flex-col items-center bg-slate-50 p-1 rounded border border-slate-200 relative overflow-visible">
+                <span class="text-[10px] text-slate-400 scale-90">声誉</span>
+                <span id="val-reputation" class="text-yellow-600 text-base">100.00</span>
+                <div id="float-reputation" class="absolute top-0 left-1/2 -translate-x-1/2"></div>
+            </div>
+        </div>
+        
+        <div class="w-full h-1 bg-slate-200 mt-2 rounded-full overflow-hidden">
+            <div id="progress-bar" class="bg-blue-500 h-1 transition-all duration-500" style="width: 0%"></div>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="flex-1 relative w-full h-full max-w-lg mx-auto bg-white md:my-4 md:rounded-2xl md:shadow-xl md:border md:border-slate-200 overflow-hidden flex flex-col z-0">
+        
+        <!-- 1. 开场 -->
+        <div id="screen-start" class="absolute inset-0 z-20 flex flex-col bg-white fade-in overflow-y-auto">
+            <div class="header-spacer"></div>
+            <div class="flex-1 p-6 flex flex-col items-center justify-center text-center pb-40">
+                <div class="text-6xl mb-6 animate-bounce">🌍</div>
+                <h2 class="text-xl font-bold text-slate-800 mb-2">SunLink ESG 管理挑战</h2>
+                <p class="text-sm font-medium text-blue-600 mb-4">欢迎来到 SunLink 光伏+输变电项目</p>
+                <p class="text-sm text-slate-600 mb-8 leading-relaxed px-4">
+                    你需要平衡<b>工期压力</b>、<b>项目利润</b>与<b>合规要求</b><br>
+                    每一个决定都将影响项目的最终命运
+                </p>
+                <div class="mt-4 pt-6 border-t border-slate-100 w-full">
+                    <p class="text-xs text-slate-400 font-medium">开发单位</p>
+                    <p class="text-xs text-slate-600 font-bold mb-2">天津大学全球工程经营实验室</p>
+                    <p class="text-xs text-slate-400 font-medium">联系人</p>
+                    <p class="text-xs text-slate-600">傅老师 <a href="mailto:yongcheng_fu@126.com" class="text-blue-500 underline">yongcheng_fu@126.com</a></p>
+                    <div class="copyright-text">© 2025 Tianjin University GIPC. All Rights Reserved.</div>
+                </div>
+            </div>
+            <div class="fixed bottom-0 left-0 w-full p-4 bg-white/95 border-t border-slate-100 backdrop-blur-sm z-50 pb-safe-area">
+                <button onclick="goToSurvey()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">
+                    开始挑战
+                </button>
+            </div>
+        </div>
+
+        <!-- 1.5 调查问卷 -->
+        <div id="screen-survey" class="hidden flex-col h-full fade-in absolute inset-0 z-20 bg-white">
+            <div class="header-spacer"></div>
+            <div class="px-6 pt-4 flex-1 overflow-y-auto pb-32">
+                <h2 class="text-xl font-black text-slate-800 mb-2">📋 实验前小调查</h2>
+                <p class="text-xs text-slate-500 mb-6 bg-slate-50 p-2 rounded">
+                    开始之前，让我们先了解一下你。<br>
+                    *所有信息都是匿名处理，仅用于科研统计，无需顾虑。
+                </p>
+                
+                <form id="survey-form" onsubmit="submitSurvey(event)">
+                    <!-- ESG 认同 -->
+                    <div class="mb-6">
+                        <p class="text-xs font-bold text-blue-600 mb-2 uppercase">第一部分：价值判断</p>
+                        
+                        <div class="mb-4">
+                            <p class="text-sm font-medium mb-2">1. 我认为 ESG 主要是为了公关形象，对项目实质价值有限。</p>
+                            <div class="likert-scale" data-name="esg1"></div> 
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-sm font-medium mb-2">2. 与项目带来的经济利益相比，ESG议题可以做出妥协。</p>
+                            <div class="likert-scale" data-name="esg2"></div>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-sm font-medium mb-2">3. 哪怕牺牲短期利润，企业也应严格遵守环境与社会标准。</p>
+                            <div class="likert-scale" data-name="esg3"></div>
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-100 my-6">
+
+                    <!-- 风险偏好 -->
+                    <div class="mb-6">
+                        <p class="text-xs font-bold text-orange-600 mb-2 uppercase">第二部分：决策偏好</p>
+                        
+                        <div class="mb-4">
+                            <p class="text-sm font-medium mb-2">4. 为了获得巨大的潜在收益，我愿意承担较高的失败风险。</p>
+                            <div class="likert-scale" data-name="risk1"></div>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-sm font-medium mb-2">5. 我做事通常通过“打擦边球”来提高效率。</p>
+                            <div class="likert-scale" data-name="risk2"></div>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-sm font-medium mb-2">6. 我宁愿稳妥地少赚一点，也不愿冒任何违规的风险。</p>
+                            <div class="likert-scale" data-name="risk3"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="h-8"></div>
+                </form>
+            </div>
+            <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30 pb-safe-area">
+                <button onclick="submitSurvey()" id="btn-survey" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    提交并继续
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. 简报 (新增示意图) -->
+        <div id="screen-briefing" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
+            <div class="flex-1 overflow-y-auto scroll-smooth pb-24">
+                <div class="header-spacer"></div>
+                <div class="px-5 pt-2">
+                    <h2 class="text-xl font-black text-slate-800 mb-4 border-l-4 border-blue-500 pl-3">项目概况 Briefing</h2>
+                    
+                    <!-- 项目示意图 -->
+                    <div class="w-full h-40 mb-4 rounded-lg overflow-hidden shadow-sm border border-slate-200 relative bg-slate-100">
+                        <img src="https://image.pollinations.ai/prompt/A%20realistic,%20wide-angle%20engineering%20visualization%20of%20a%20large-scale%20solar%20power%20plant%20project%20in%20an%20African%20savanna%20setting.%20The%20foreground%20features%20rows%20of%20modern%20photovoltaic%20panels%20glistening%20in%20the%20sun.%20In%20the%20middle%20distance,%20high-voltage%20transmission%20towers%20(132kV%20lattice%20steel%20towers)%20stretch%20across%20the%20landscape,%20connecting%20the%20solar%20farm%20to%20the%20horizon.%20The%20background%20shows%20a%20vast,%20open%20savanna%20with%20sparse%20acacia%20trees%20and%20a%20clear%20blue%20sky.%20The%20style%20should%20be%20professional,%20similar%20to%20an%20architectural%20rendering%20or%20infrastructure%20project%20photo,%20bright%20and%20clear.?width=1536&height=1024&nologo=true" alt="Project Visualization" class="w-full h-full object-cover">
+                        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-900/60 to-transparent p-2">
+                            <p class="text-white text-xs font-bold">100MW 光伏 + 132kV 输电线路</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 text-sm text-slate-700">
+                        <!-- 一、国家 -->
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <h4 class="font-bold text-slate-900 mb-1 text-xs uppercase text-blue-600">一、国家</h4>
+                            <p class="text-xs">🌍 非洲某国</p>
+                        </div>
+
+                        <!-- 二、项目范围 -->
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <h4 class="font-bold text-slate-900 mb-1 text-xs uppercase text-blue-600">二、项目范围</h4>
+                            <ul class="list-disc pl-4 space-y-1 text-xs leading-relaxed">
+                                <li>新建一座 <strong>100 MW 光伏电站</strong>；</li>
+                                <li>配套建设约 <strong>80 km、132kV 输电线路</strong>，接入国家主干电网；</li>
+                                <li>扩建一座现有变电站，新增 132/220kV 主变及相关设备。</li>
+                            </ul>
+                        </div>
+
+                        <!-- 三、项目模式 -->
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <h4 class="font-bold text-slate-900 mb-1 text-xs uppercase text-blue-600">三、项目模式</h4>
+                            <ul class="list-disc pl-4 space-y-1 text-xs leading-relaxed">
+                                <li><strong>EPC 总承包</strong>；</li>
+                                <li>你所在公司是该项目 EPC 总承包商，你担任<strong>项目经理</strong>角色；</li>
+                                <li class="text-red-700 bg-red-50 p-1 rounded font-bold">关键条款：项目当前预计12个月完工。合同工期16个月，误期损害赔偿费100万/月。</li>
+                            </ul>
+                        </div>
+
+                        <!-- 四、资金来源 -->
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <h4 class="font-bold text-slate-900 mb-1 text-xs uppercase text-blue-600">四、资金来源</h4>
+                            <ul class="list-disc pl-4 space-y-1 text-xs leading-relaxed">
+                                <li><strong>世界银行（World Bank）</strong>通过 IBRD/IDA 贷款和担保等方式主导融资；</li>
+                                <li>项目适用世界银行<strong>《环境与社会框架》（ESF）</strong>及 10 项环境与社会标准（ESS）；</li>
+                                <li>初步评估为 <span class="bg-orange-100 text-orange-800 px-1 rounded font-bold">Substantial 风险等级</span>（环境与社会风险较高），需高质量 ESIA、ESMP 和 ESCP。</li>
+                            </ul>
+                        </div>
+
+                        <!-- 五、背景信息 (精简版) -->
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <h4 class="font-bold text-slate-900 mb-1 text-xs uppercase text-blue-600">五、背景信息</h4>
+                            <ul class="list-disc pl-4 space-y-2 text-[11px] leading-relaxed text-slate-600">
+                                <li><strong>生态环境：</strong>项目区域涉及多种野生动物栖息地及候鸟迁徙路线，生态敏感性不确定。</li>
+                                <li><strong>社会背景：</strong>征地涉及多个村庄，当地失业率较高，治安状况复杂，存在潜在社会矛盾。</li>
+                                <li><strong>过往经验：</strong>当地政府在征地补偿方面书面记录不足，曾有外资项目因劳工和补偿问题引发停工。</li>
+                                <li><strong>监管要求：</strong>世界银行ESF标准严格，但本地承包商和监管部门的合规意识相对薄弱。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="fixed bottom-0 left-0 w-full p-4 bg-white/95 border-t border-slate-100 backdrop-blur-sm z-50 pb-safe-area">
+                <button onclick="goToContext()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">
+                    获取任务简报 ➡️
+                </button>
+            </div>
+        </div>
+
+        <!-- 2.5 随机情境分配 (带动画 + 描述 + 高亮 + 逻辑说明) -->
+        <div id="screen-context" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
+            <div class="header-spacer"></div>
+            <div class="px-6 pt-4 flex-1 overflow-y-auto pb-24">
+                <div class="flex flex-col items-center text-center">
+                    <h2 class="text-xl font-bold text-slate-800 mb-2">正在随机生成实验环境...</h2>
+                    <p class="text-sm text-slate-500 mb-4">系统将在 3×3 矩阵中为您分配<br>企业资源与项目环境</p>
+
+                    <!-- 9宫格动画容器 -->
+                    <div class="grid-box mb-6" id="random-grid">
+                        <!-- JS 生成 9 个格 -->
+                    </div>
+
+                    <div id="ctx-result-area" class="hidden flex-col items-center fade-in w-full">
+                        <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl w-full shadow-sm mb-4">
+                            <div class="text-2xl mb-1">🎲</div>
+                            <p class="text-xs text-blue-400 uppercase font-bold tracking-wider mb-1">随机结果</p>
+                            <p id="final-ctx-text" class="text-lg font-black text-blue-800 mb-1"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- 逻辑说明 -->
+                    <div class="bg-slate-100 p-2 rounded mb-4 text-[10px] text-slate-500 text-left leading-relaxed border border-slate-200">
+                        <span class="font-bold text-slate-700">💡 逻辑说明：</span><br>
+                        1. <span class="font-bold">资源越丰富</span>，企业ESG管理能力越强（如拥有专项资金和专家），能有效降低合规成本和负面影响。<br>
+                        2. <span class="font-bold">项目越敏感</span>，各方关注度越高（如NGO、媒体），ESG管理不当被暴露的概率越高。
+                    </div>
+
+                    <!-- 描述区 -->
+                    <div class="w-full text-left space-y-1 border-t border-slate-100 pt-2">
+                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">企业资源 (Resource) 说明</h3>
+                        <div class="ctx-desc-card" id="desc-res-high">
+                            <span class="ctx-label text-emerald-600">高资源 (High)</span>
+                            公司资金雄厚，拥有成熟的ESG部门和专项预算，大力支持标杆项目建设，能承担较高的合规成本。
+                        </div>
+                        <div class="ctx-desc-card" id="desc-res-mid">
+                            <span class="ctx-label text-blue-600">中资源 (Mid)</span>
+                            公司有一定资源储备，能支持合理的合规成本，但需平衡利润考核，额外支出需谨慎论证。
+                        </div>
+                        <div class="ctx-desc-card" id="desc-res-low">
+                            <span class="ctx-label text-slate-600">低资源 (Low)</span>
+                            公司财务吃紧，无专门ESG团队，对项目支持十分有限，追求成本最低化，任何额外开支极难审批。
+                        </div>
+
+                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 mt-4">敏感度 (Sensitivity) 说明</h3>
+                        <div class="ctx-desc-card" id="desc-sen-high">
+                            <span class="ctx-label text-red-600">高敏感度 (High)</span>
+                            案例：项目位于保护区边缘，涉及极危物种栖息地或原住民神圣领地。国际NGO长期驻点监督，任何违规极易被发现。
+                        </div>
+                        <div class="ctx-desc-card" id="desc-sen-mid">
+                            <span class="ctx-label text-yellow-600">中敏感度 (Mid)</span>
+                            案例：项目周边有一定村落，涉及常规征地拆迁。地方媒体和居民有一定维权意识，存在常规社会风险。
+                        </div>
+                        <div class="ctx-desc-card" id="desc-sen-low">
+                            <span class="ctx-label text-green-600">低敏感度 (Low)</span>
+                            案例：项目位于偏远无人荒漠，社区稀少。NGO和媒体极少关注，违规行为较难被外界发现。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30 pb-safe-area hidden" id="btn-start-matrix">
+                <button onclick="goToMatrix()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl shadow-lg">
+                    查看应对策略集 ➡️
+                </button>
+            </div>
+        </div>
+
+        <!-- 2.6 策略矩阵展示 -->
+        <div id="screen-matrix" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
+            <div class="header-spacer"></div>
+            <div class="px-4 pt-2 flex-1 overflow-y-auto pb-32">
+                <h2 class="text-lg font-bold text-slate-800 mb-2">SunLink ESG 响应策略表</h2>
+                <p class="text-xs text-slate-500 mb-2">基于您的分配（<span id="user-ctx-summary" class="font-bold text-blue-600"></span>），不同策略的后果如下：</p>
+                <div class="bg-slate-50 p-2 mb-3 rounded border border-slate-200 text-[10px] text-slate-600 text-center">
+                    <span class="font-bold">基准值：</span>利润 1000.00万 | 工期 12.00月 (逾期>16月罚款) | 声誉 100.00
+                </div>
+                
+                <div class="overflow-x-auto border border-slate-200 rounded shadow-sm">
+                    <div id="matrix-container"></div> <!-- JS 生成表格 -->
+                </div>
+                <p class="text-[10px] text-slate-400 mt-2 italic text-center">*表格中高亮列为您当前的资源条件，概率行高亮为您当前的敏感度</p>
+            </div>
+            <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30 pb-safe-area">
+                <button onclick="startGame()" class="w-full bg-red-600 hover:bg-red-700 text-white text-lg font-bold py-3 rounded-xl shadow-lg">
+                    进入现场处理危机 ➡️
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. 危机事件 -->
+        <div id="screen-game" class="hidden flex-col h-full fade-in absolute inset-0 z-10 bg-white">
+            <div class="header-spacer"></div>
+            <div class="flex-1 overflow-y-auto scroll-smooth pb-32 px-4 pt-2">
+                <span id="event-tag" class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded mb-2 inline-block tracking-wide">TAG</span>
+                <h3 id="event-title" class="text-2xl font-black text-slate-900 mb-4 leading-snug mt-1">Title</h3>
+                <div class="text-sm text-slate-700 leading-relaxed space-y-2 pb-4 mb-4 border-l-4 border-yellow-400 pl-3 bg-yellow-50 p-3 rounded-r border-y border-r border-yellow-100" id="event-desc"></div>
+                <div class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">请做出决策：</div>
+                <div id="options-container" class="grid gap-3 pb-10"></div>
+            </div>
+        </div>
+
+        <!-- 4. 判定动画 -->
+        <div id="screen-check" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center text-center bg-slate-900/95 text-white backdrop-blur-sm">
+            <div class="text-6xl mb-6 dice-roll">🎲</div>
+            <h2 class="text-xl font-bold mb-2">风险判定中...</h2>
+            <p id="check-text" class="text-slate-400 text-sm">命运的硬币正在旋转...</p>
+        </div>
+
+        <!-- 5. 结算反馈 -->
+        <div id="screen-result" class="hidden flex-col h-full fade-in absolute inset-0 z-10 bg-white">
+            <div class="flex-1 overflow-y-auto pb-32">
+                <div class="header-spacer"></div>
+                <div class="px-5 pt-2 flex flex-col items-center">
+                    <div id="result-icon" class="text-5xl mb-4 mt-2">🛑</div>
+                    <h2 id="result-title" class="text-2xl font-black text-slate-800 mb-4 text-center">结果标题</h2>
+                    <div class="bg-slate-50 rounded-xl p-4 w-full border border-slate-200 relative shadow-sm mb-4">
+                        <div id="lucky-badge" class="hidden absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm transform rotate-3">侥幸逃脱</div>
+                        <p id="result-desc" class="text-sm text-slate-700 italic leading-relaxed">...</p>
+                        <div class="flex justify-center gap-3 text-xs font-bold font-mono pt-3 mt-3 border-t border-slate-200">
+                            <span id="show-diff-budget" class="hidden"></span>
+                            <span id="show-diff-schedule" class="hidden"></span>
+                            <span id="show-diff-rep" class="hidden"></span>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-3 w-full mb-4 rounded-r text-xs leading-relaxed">
+                        <span class="font-bold text-blue-800 block mb-1">💡 专家点评</span>
+                        <span id="result-learning" class="text-blue-900/80">...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-safe-area">
+                <button onclick="nextLevel()" id="btn-next-level" class="w-full bg-slate-800 active:bg-slate-900 text-white font-bold py-3 rounded-xl shadow-md transition">
+                    下一事件 ➡️
+                </button>
+            </div>
+        </div>
+
+        <!-- 6. 完工报告 -->
+        <div id="screen-end" class="hidden absolute inset-0 z-20 flex flex-col items-center bg-white fade-in">
+            <div class="flex-1 overflow-y-auto w-full flex flex-col items-center pb-40">
+                <div class="header-spacer"></div>
+                <div class="px-6 pt-2 w-full flex flex-col items-center">
+                    <div id="end-icon" class="text-6xl mt-2 mb-4">🏆</div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-4">完工报告</h2>
+
+                    <div class="grid grid-cols-3 gap-2 w-full mb-6">
+                        <div class="bg-slate-50 p-3 rounded border text-center">
+                            <div class="text-[10px] text-slate-500 mb-1">最终利润</div>
+                            <div id="end-budget" class="text-lg font-bold text-emerald-600"></div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border text-center relative overflow-hidden">
+                            <div class="text-[10px] text-slate-500 mb-1">最终工期</div>
+                            <div id="end-schedule" class="text-lg font-bold text-blue-600"></div>
+                            <div id="end-overdue-stamp" class="hidden absolute top-0 right-0 text-[8px] bg-red-500 text-white px-1 rounded-bl">逾期</div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border text-center">
+                            <div class="text-[10px] text-slate-500 mb-1">最终声誉</div>
+                            <div id="end-rep" class="text-lg font-bold text-yellow-600"></div>
+                        </div>
+                    </div>
+
+                    <div id="end-feedback" class="text-sm bg-white border border-slate-200 p-4 rounded-xl shadow-sm w-full mb-6 text-slate-700 leading-relaxed"></div>
+
+                    <div class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6">
+                        <p class="text-sm font-bold text-slate-800 mb-2 border-l-4 border-indigo-500 pl-2">📊 决策路径对比分析</p>
+                        <div id="loading-stats" class="text-xs text-blue-500 animate-pulse mb-2 hidden">正在同步云端学员数据...</div>
+
+                        <table class="comp-table">
+                            <thead>
+                                <tr>
+                                    <th>策略路径</th>
+                                    <th>利润</th>
+                                    <th>工期(月)</th>
+                                    <th>声誉</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="highlight">
+                                    <td>你的决策</td>
+                                    <td id="comp-user-budget">-</td>
+                                    <td id="comp-user-schedule">-</td>
+                                    <td id="comp-user-rep">-</td>
+                                </tr>
+                                <tr class="avg-row">
+                                    <td id="avg-label">👥 学员平均</td>
+                                    <td id="avg-budget">计算中...</td>
+                                    <td id="avg-schedule">计算中...</td>
+                                    <td id="avg-rep">计算中...</td>
+                                </tr>
+                                <tr class="bg-emerald-100 text-emerald-800 font-medium">
+                                    <td title="高资源企业，所有事件选C">最合规决策</td>
+                                    <td id="bench-compliance-budget">600.00</td>
+                                    <td id="bench-compliance-schedule">16.00</td>
+                                    <td id="bench-compliance-rep">160.00</td>
+                                </tr>
+                                <tr class="bg-yellow-100 text-yellow-800 font-medium">
+                                    <td title="高资源企业，所有选A且不暴露">最侥幸情况</td>
+                                    <td id="bench-luck-budget">920.00</td>
+                                    <td id="bench-luck-schedule">12.80</td>
+                                    <td id="bench-luck-rep">100.00</td>
+                                </tr>
+                                <tr class="bg-red-100 text-red-800 font-medium">
+                                    <td title="低资源企业，所有选A且暴露">最狼狈情况</td>
+                                    <td id="bench-worst-budget">40.00</td>
+                                    <td id="bench-worst-schedule">21.60</td>
+                                    <td id="bench-worst-rep">-20.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="text-center mt-2">
+                            <button onclick="forceRetryCloud()" class="text-[10px] text-blue-500 underline cursor-pointer hover:text-blue-700">刷新数据</button>
+                        </div>
+                    </div>
+
+                    <div class="w-full bg-blue-50/50 p-4 rounded-xl border border-blue-100 mb-6">
+                        <p class="text-sm font-bold text-blue-800 mb-2">🤔 思考与讨论</p>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            对于国际工程 ESG 管理，经历了这个项目的种种挑战后，通过上面的对比，你有何感想？欢迎与身边的同事交流。
+                        </p>
+                    </div>
+
+                    <div class="mt-4 w-full text-center">
+                        <p class="text-xs text-slate-400 font-medium">开发单位</p>
+                        <p class="text-xs text-slate-600 font-bold mb-2">天津大学全球工程经营实验室</p>
+                        <p class="text-xs text-slate-400 font-medium">联系人</p>
+                        <p class="text-xs text-slate-600">傅老师 <a href="mailto:yongcheng_fu@126.com" class="text-blue-500 underline">yongcheng_fu@126.com</a></p>
+                        <div class="copyright-text">© 2025 Tianjin University GIPC. All Rights Reserved.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30 pb-safe-area">
+                <button onclick="location.reload()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg">
+                    再试一次
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- 全局配置 ---
+        const LIMIT_SCHEDULE = 16.0; // 工期红线
+        const PENALTY_PER_MONTH = 100; // 超过红线每月的罚款（万）
+
+        // --- 实验变量 ---
+        const CONTEXT_LEVELS = ['low', 'mid', 'high'];
+        let globalContext = {
+            resource: 'mid',    
+            sensitivity: 'mid'  
+        };
+
+        // --- 核心状态变量 (Fix v33.9.8) ---
+        let gameState = { 
+            budget: 1000, 
+            schedule: 12.0, 
+            reputation: 100, 
+            currentLevel: 0 
+        };
+        
+        let userProfile = {
+            esgScore: 0,
+            riskScore: 0,
+            surveyData: {}
+        };
+
+        let decisionPath = []; // 记录决策路径
+
+        // --- LeanCloud Init ---
+        try {
+            const lcConfig = {
+                appId: "Np53RA2jblzqX0j9psbFtQDt-MdYXbMMI",
+                appKey: "2J3XtixOT46u7RxEfmGm4wd3",
+                serverURLs: "https://np53ra2j.api.lncldglobal.com" 
+            };
+            if (typeof AV !== 'undefined') {
+                AV.init(lcConfig);
+            } else if (typeof LC !== 'undefined') {
+                LC.init(lcConfig);
+            }
+        } catch(e) { 
+            console.warn("LC Init Error:", e); 
+        }
+
+        // --- 数值逻辑引擎 ---
+        const STRATEGY_LOGIC = {
+            C: { // 合规
+                cost: {
+                    high: { b: -80, s: 0.8, r: 12 },
+                    mid:  { b: -100, s: 1.0, r: 10 },
+                    low:  { b: -120, s: 1.2, r: 8 }
+                }
+            },
+            B: { // 妥协
+                prob: { // 暴露概率
+                    high: 0.5, 
+                    mid: 0.4,
+                    low: 0.3
+                },
+                fail: { // 暴露后果
+                    high: { b: -104, s: 1.04, r: -8 },
+                    mid:  { b: -130, s: 1.3, r: -10 },
+                    low:  { b: -156, s: 1.56, r: -12 }
+                },
+                success: { // 不暴露后果
+                    high: { b: -32, s: 0.32, r: 0 },
+                    mid:  { b: -40, s: 0.4, r: 0 },
+                    low:  { b: -48, s: 0.48, r: 0 }
+                }
+            },
+            A: { // 逃避 (原抗拒)
+                prob: { // 暴露概率
+                    high: 0.7,
+                    mid: 0.6,
+                    low: 0.5
+                },
+                fail: {
+                    high: { b: -128, s: 1.28, r: -16 },
+                    mid:  { b: -160, s: 1.6, r: -20 },
+                    low:  { b: -192, s: 1.92, r: -24 }
+                },
+                success: {
+                    high: { b: -16, s: 0.16, r: 0 },
+                    mid:  { b: -20, s: 0.2, r: 0 },
+                    low:  { b: -24, s: 0.24, r: 0 }
+                }
+            }
+        };
+
+        // --- 游戏文本数据 ---
+        const gameData = [
+            {
+                id: 1, tag: "ESS6 生物多样性", title: "危机事件1：带血的羽毛",
+                desc: "<strong>【事件描述】</strong><br>输电线路施工进入关键期。今早，在3号塔基附近发现了两只极危候鸟的尸体。此时，正好有一支国际环保NGO考察团计划在1天后访问现场。如果尸体被发现，项目将面临巨大的舆论风暴。",
+                options: [
+                    { type: "A", text: "这是意外。立刻清理现场，把鸟埋了，不要声张。通知安保封锁该区域，以‘施工安全’为由拒绝NGO接近该塔基。", riskRole: "NGO 无人机", riskMsg: "NGO 用无人机拍到了埋尸画面并在 Twitter 曝光。项目被勒令停工整顿。", luckyMsg: "你封锁了现场，NGO 没发现异常。但这事让你心惊肉跳。", learning: "掩盖环境事故是大忌。在数字时代，没有什么秘密能真正藏住。" },
+                    { type: "B", text: "如实记录，但对外解释这是‘自然死亡’或‘既有线路造成’。同时在NGO来访前，临时挂几个驱鸟气球做做样子。", riskRole: "世行专家", riskMsg: "专家尸检证明是撞击致死。你们被认定为‘缺乏诚意’，增加了重点监管。", luckyMsg: "专家勉强接受了解释，只是简单记录了一下。", learning: "误导调查属于诚信问题，会极大损害与监管方的信任关系。" },
+                    { type: "C", text: "立即停工，保护现场，通知世行和当地林业局。聘请专家评估原因，并承诺在 NGO 来访时公开整改方案（如加装鸟类转向器）。", successMsg: "主动停工整改花费巨大，但赢得了 NGO 的尊重，危机化解。", learning: "透明和专业的应对，能将危机转化为建立信任的契机。" }
+                ]
+            },
+            {
+                id: 2, tag: "ESS2 劳工条件", title: "危机事件2：沉默的工人",
+                desc: "<strong>【事件描述】</strong><br>分包商为抢雨季前的工期实行“大干100天”，工人每日工作13小时以上。且为了方便“统一调度”，分包商安排所有工人挤在现场周边的临时板房里，卫生条件恶劣，垃圾堆积，异味刺鼻。有工人私下抱怨“像住猪圈一样”，但工头称大家都是来挣钱的，忍忍就过去了。",
+                options: [
+                    { type: "A", text: "这是当地常态。只要按时发工资，工人为了赚钱是愿意吃苦的。让工头稍微注意一下垃圾清理，不要影响现场观感即可。", riskRole: "疫情爆发", riskMsg: "恶劣的卫生条件导致传染病在营地爆发，大批工人病倒。世行介入调查发现工时和居住环境严重违规。", luckyMsg: "虽然环境差了点，但大家为了加班费都忍了下来，工程进度保住了。", learning: "忽视基本的生活和工作条件（ESS2）不仅不人道，更是巨大的运营风险。" },
+                    { type: "B", text: "环境太差容易滋生疾病。立即拨款改善宿舍卫生，加装风扇。至于加班，只要工人不公开抗议，为了节点只能先维持现状。", riskRole: "工会抗议", riskMsg: "改善住宿没能平息过度劳累的怨气。工会组织罢工，要求支付巨额加班费和健康赔偿。", luckyMsg: "住宿改善让工人心情好了一些，勉强维持着高强度工作直到节点。", learning: "小恩小惠无法掩盖系统性的劳动剥削，过度加班也是严重的合规问题。" },
+                    { type: "C", text: "立即整改。强制限制加班工时（ESS2 劳工条件），租用外部民居以降低宿舍居住密度，确保人均居住面积和卫生达标，哪怕工期受影响。", successMsg: "成本上升，但工人效率提高，事故率下降。世行赞赏你们的人本管理。", learning: "确保供应链劳工合规是总包商不可推卸的责任（ESS2）。" }
+                ]
+            },
+            {
+                id: 3, tag: "ESS8 文化遗产", title: "危机事件3：神树拦路",
+                desc: "<strong>【事件描述】</strong><br>光伏场区平整土地时，推土机被村民拦下。场区中心有一棵看似普通的巨大的猴面包树。设计图纸上显示必须铲除，否则会遮挡两排组件，影响发电量。但村民坚称这是**“祖先栖息的神树”**，绝对不能动。",
+                options: [
+                    { type: "A", text: "没有什么是钱解决不了的。找村长私下谈，给村集体一笔‘祭祀费’，让我们明天把它砍了。", riskRole: "反腐机构", riskMsg: "村长私吞钱财引发暴动。这笔钱被定性为商业贿赂。", luckyMsg: "村长搞定了村民。树没了，耳根清净了。", learning: "不要试图用金钱买断文化信仰，这涉及严重的道德风险。" },
+                    { type: "B", text: "这树不在官方保护名录里，土地我们也已经征下来了。夜间施工，把它推倒，造成既定事实。", riskRole: "世行红牌", riskMsg: "破坏文化遗产是世行红线。项目面临贷款取消风险。", luckyMsg: "树倒了，村民虽然骂，但没闹出大事。", learning: "尊重社区认定的文化价值，是获得‘社会许可’的前提。" },
+                    { type: "C", text: "尊重社区意见。修改设计方案，保留这棵树，重新排布周围组件，哪怕损失一些发电效率。", successMsg: "虽然改设计很麻烦且昂贵，但神树成了项目友谊的象征，后续征地很顺。", learning: "包容性设计能有效规避长期的社会阻力。" }
+                ]
+            },
+            {
+                id: 4, tag: "ESS4 社区安全", title: "危机事件4：失控的保安",
+                desc: "<strong>【事件描述】</strong><br>昨晚，安保公司的一名保安抓到了一名偷割电缆的村民。为了“杀鸡儆猴”，保安将该村民殴打致伤，并扣押在保安室一整夜。现在村民家属带着全村人围在门口要人，情绪极其激动。",
+                options: [
+                    { type: "A", text: "是他偷窃在先！把被盗电缆作为证据摆出来，支持保安的正当防卫，报警抓人。", riskRole: "社区阻工", riskMsg: "矛盾激化，进场道路被挖断，阻工半个多月。", luckyMsg: "警方带走了小偷，支持了你们的防卫说法。", learning: "偷窃是法律问题，但滥用私刑是人权问题，性质完全不同。" },
+                    { type: "B", text: "千万别让世行知道。给伤者付医药费和赔偿金，把打人的保安连夜送走（开除），对外说是村民摔伤的。", riskRole: "合规调查", riskMsg: "医院报告泄露了殴打事实。隐瞒严重事故罪加一等。", luckyMsg: "家属拿钱闭嘴了，事情压下去了。", learning: "发生事故必须如实上报，隐瞒会被视为管理体系失效。" },
+                    { type: "C", text: "立刻放人并送医。向社区公开道歉，承认安保过度执法。立即向世行报告该‘严重事故’，并配合警方调查保安。", successMsg: "快速反应机制得到了认可，赔偿虽然肉痛，但事态没有进一步扩大。", learning: "快速救治和平息事态是危机处理的第一原则。" }
+                ]
+            },
+            {
+                id: 5, tag: "ESS5 土地征收", title: "危机事件5：看不见的“邻居”",
+                desc: "<strong>【事件描述】</strong><br>在项目外围的一片荒地上，你们计划建设临时堆料场。土地权属显示这是“国有荒地”，手续齐全。但进场时发现，有几个游牧家庭（无固定居所）正在这里临时搭帐篷放牧。他们没有土地证，但声称这里是他们百年的季节性牧场。",
+                options: [
+                    { type: "A", text: "这是国有土地，我们有证。通知警察和政府，请他们依法离开。", riskRole: "人权观察", riskMsg: "强驱视频被曝光。ESS5 保护无证的传统使用者，你们严重违规。", luckyMsg: "他们看对方人多势众，吓跑了。", learning: "土地证不是唯一依据，生计和传统权益必须被尊重。" },
+                    { type: "B", text: "给点米面油和少许现金，劝他们去别的地方。", riskRole: "NGO", riskMsg: "NGO 指控你们利用贫穷进行剥削。补偿必须基于重置成本。", luckyMsg: "他们拿了点钱，搬到了几公里外。", learning: "非正式的施舍无法解决根本的生计恢复问题。" },
+                    { type: "C", text: "将他们识别为‘非正式占有者’（ESS5）。评估搬迁对他们生计（放牧）的影响，提供替代牧场建议或生计补偿方案，在方案达成前暂不强推。", successMsg: "流程繁琐且补偿金极高，但彻底消除了法律隐患。", learning: "妥善处理非自愿移民，是大型项目可持续的基础。" }
+                ]
+            }
+        ];
+
+        // --- 辅助工具: 格式化数字 ---
+        function fmt(n) {
+            if(typeof n !== 'number') return n;
+            return n.toFixed(2);
+        }
+
+        // --- 问卷逻辑 ---
+        function goToSurvey() {
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-survey').classList.remove('hidden');
+            document.getElementById('screen-survey').classList.add('flex');
+            renderLikertScales();
+        }
+
+        function renderLikertScales() {
+            const scales = document.querySelectorAll('.likert-scale');
+            scales.forEach(el => {
+                const name = el.dataset.name;
+                for(let i=1; i<=5; i++) {
+                    let label = "";
+                    if(i===1) label = "非常<br>不同意";
+                    if(i===2) label = "不同意";
+                    if(i===3) label = "中立";
+                    if(i===4) label = "同意";
+                    if(i===5) label = "非常<br>同意";
+                    el.innerHTML += `
+                        <div class="likert-opt" onclick="selectLikert('${name}', ${i}, this)">
+                            <div class="likert-circle">${i}</div>
+                            <span class="likert-label">${label}</span>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function selectLikert(name, val, el) {
+            userProfile.surveyData[name] = val;
+            // UI update
+            const parent = el.parentElement;
+            Array.from(parent.children).forEach(child => child.classList.remove('selected'));
+            el.classList.add('selected');
+            checkSurveyComplete();
+        }
+
+        function checkSurveyComplete() {
+            const count = Object.keys(userProfile.surveyData).length;
+            const btn = document.getElementById('btn-survey');
+            if(count >= 6) {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                btn.classList.add('active:scale-95');
+            }
+        }
+
+        function submitSurvey(e) {
+            if(e) e.preventDefault();
+            const d = userProfile.surveyData;
+            userProfile.esgScore = ((6 - d.esg1) + (6 - d.esg2) + d.esg3) / 3; 
+            userProfile.riskScore = (d.risk1 + d.risk2 + (6 - d.risk3)) / 3;
+            goToBriefing();
+        }
+
+        // --- 流程跳转 ---
+        function goToBriefing() {
+            document.getElementById('screen-survey').classList.add('hidden');
+            document.getElementById('screen-survey').classList.remove('flex');
+            document.getElementById('screen-briefing').classList.remove('hidden');
+            document.getElementById('screen-briefing').classList.add('flex');
+        }
+
+        function goToContext() {
+            document.getElementById('screen-briefing').classList.add('hidden');
+            document.getElementById('screen-briefing').classList.remove('flex');
+            document.getElementById('screen-context').classList.remove('hidden');
+            document.getElementById('screen-context').classList.add('flex');
+            runContextAnimation();
+        }
+
+        // --- 九宫格动画 ---
+        function runContextAnimation() {
+            const grid = document.getElementById('random-grid');
+            grid.innerHTML = '';
+            
+            const resList = ['low', 'mid', 'high'];
+            const senList = ['low', 'mid', 'high'];
+            const combinations = [];
+            
+            resList.forEach(r => {
+                senList.forEach(s => {
+                    combinations.push({ r, s });
+                });
+            });
+            
+            combinations.forEach((c, idx) => {
+                const el = document.createElement('div');
+                el.className = `grid-cell grid-cell-${idx}`;
+                el.innerHTML = `
+                    <div class="grid-cell-text">${getResDescShort(c.r)}</div>
+                    <div class="grid-cell-sub">+${getSenDescShort(c.s)}</div>
+                `;
+                grid.appendChild(el);
+            });
+
+            globalContext.resource = resList[Math.floor(Math.random() * 3)];
+            globalContext.sensitivity = senList[Math.floor(Math.random() * 3)];
+            const targetIndex = combinations.findIndex(c => c.r === globalContext.resource && c.s === globalContext.sensitivity);
+
+            let jumps = 0;
+            let currentHighlight = 0;
+            const maxJumps = 15 + Math.floor(Math.random() * 5);
+            const cells = document.querySelectorAll('.grid-cell');
+            
+            const interval = setInterval(() => {
+                cells.forEach(c => c.classList.remove('active'));
+                currentHighlight = (currentHighlight + 1) % 9;
+                cells[currentHighlight].classList.add('active');
+                jumps++;
+
+                if (jumps > maxJumps && currentHighlight === targetIndex) {
+                    clearInterval(interval);
+                    setTimeout(showContextResult, 500);
+                }
+            }, 100);
+        }
+
+        function showContextResult() {
+            document.getElementById('btn-start-matrix').classList.remove('hidden');
+            document.getElementById('ctx-result-area').classList.remove('hidden');
+            document.getElementById('ctx-result-area').classList.add('flex');
+            
+            document.getElementById('final-ctx-text').innerText = `${getResDescShort(globalContext.resource)} + ${getSenDescShort(globalContext.sensitivity)}`;
+            
+            document.querySelectorAll('.ctx-desc-card').forEach(el => el.classList.remove('highlighted'));
+            document.getElementById(`desc-res-${globalContext.resource}`).classList.add('highlighted');
+            document.getElementById(`desc-sen-${globalContext.sensitivity}`).classList.add('highlighted');
+        }
+
+        function getResDescShort(l) { return l==='low'?'低资源':(l==='mid'?'中资源':'高资源'); }
+        function getSenDescShort(l) { return l==='low'?'低敏感度':(l==='mid'?'中敏感度':'高敏感度'); }
+
+        function goToMatrix() {
+            document.getElementById('screen-context').classList.add('hidden');
+            document.getElementById('screen-context').classList.remove('flex');
+            document.getElementById('screen-matrix').classList.remove('hidden');
+            document.getElementById('screen-matrix').classList.add('flex');
+            renderMatrix();
+        }
+
+        function renderMatrix() {
+            const r = globalContext.resource;
+            const s = globalContext.sensitivity;
+            
+            document.getElementById('user-ctx-summary').innerText = `${getResDescShort(r)} + ${getSenDescShort(s)}`;
+            
+            let html = `
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width:15%">策略</th>
+                            <th rowspan="2" style="width:15%">状态</th>
+                            <th colspan="3">利润影响</th>
+                            <th colspan="3">工期影响(月)</th>
+                            <th colspan="3">声誉影响</th>
+                        </tr>
+                        <tr>
+                            <th class="${r==='low'?'matrix-highlight':''}">低资源</th>
+                            <th class="${r==='mid'?'matrix-highlight':''}">中资源</th>
+                            <th class="${r==='high'?'matrix-highlight':''}">高资源</th>
+                            <th class="${r==='low'?'matrix-highlight':''}">低资源</th>
+                            <th class="${r==='mid'?'matrix-highlight':''}">中资源</th>
+                            <th class="${r==='high'?'matrix-highlight':''}">高资源</th>
+                            <th class="${r==='low'?'matrix-highlight':''}">低资源</th>
+                            <th class="${r==='mid'?'matrix-highlight':''}">中资源</th>
+                            <th class="${r==='high'?'matrix-highlight':''}">高资源</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // Row C
+            html += `
+                <tr>
+                    <td class="font-bold text-blue-600">C 合规</td>
+                    <td>-</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">-120</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">-100</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">-80</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">+1.2</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">+1.0</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">+0.8</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">+8</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">+10</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">+12</td>
+                </tr>
+            `;
+
+            // Row B
+            html += `
+                <tr>
+                    <td rowspan="3" class="font-bold text-yellow-600">B 妥协</td>
+                    <td class="prob-row ${s==='low'?'matrix-highlight':''}" colspan="10">暴露概率: 低敏感30% | 中敏感40% | 高敏感50%</td>
+                </tr>
+                <tr>
+                    <td class="text-[8px]">未暴露</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">-48</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">-40</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">-32</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">+0.48</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">+0.4</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">+0.32</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">0</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">0</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">0</td>
+                </tr>
+                <tr>
+                    <td class="text-[8px] text-red-500">暴露</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">-156</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">-130</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">-104</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">+1.56</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">+1.3</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">+1.04</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">-12</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">-10</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">-8</td>
+                </tr>
+            `;
+
+            // Row A
+            html += `
+                <tr>
+                    <td rowspan="3" class="font-bold text-red-600">A 逃避</td>
+                    <td class="prob-row ${s==='low'?'matrix-highlight':''}" colspan="10">暴露概率: 低敏感50% | 中敏感60% | 高敏感70%</td>
+                </tr>
+                <tr>
+                    <td class="text-[8px]">未暴露</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">-24</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">-20</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">-16</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">+0.24</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">+0.2</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">+0.16</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">0</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">0</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">0</td>
+                </tr>
+                <tr>
+                    <td class="text-[8px] text-red-500">暴露</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">-192</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">-160</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">-128</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">+1.92</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">+1.6</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">+1.28</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">-24</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">-20</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">-16</td>
+                </tr>
+            `;
+            
+            html += "</tbody></table>";
+            document.getElementById('matrix-container').innerHTML = html;
+        }
+
+        // --- 游戏核心逻辑 ---
+
+        function startGame() {
+            // Reset Game State
+            gameState = { 
+                budget: 1000, 
+                schedule: 12.0, 
+                reputation: 100, 
+                currentLevel: 0 
+            };
+            decisionPath = [];
+
+            updateUI();
+            
+            document.getElementById('screen-matrix').classList.add('hidden');
+            document.getElementById('screen-matrix').classList.remove('flex');
+            document.getElementById('screen-game').classList.remove('hidden');
+            document.getElementById('screen-game').classList.add('flex');
+            
+            loadLevel(0);
+        }
+
+        function loadLevel(index) {
+            if (index >= gameData.length) {
+                endGame();
+                return;
+            }
+            
+            gameState.currentLevel = index;
+            const data = gameData[index];
+            
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            document.getElementById('screen-game').classList.remove('hidden');
+            document.getElementById('screen-game').classList.add('flex');
+
+            const scrollArea = document.querySelector('#screen-game .overflow-y-auto');
+            if(scrollArea) scrollArea.scrollTop = 0;
+
+            const btnNext = document.getElementById('btn-next-level');
+            btnNext.onclick = null;
+
+            if(index === 4) {
+                btnNext.innerText = "查看最终结果 🏁";
+                btnNext.onclick = function() { endGame(); };
+            } else {
+                btnNext.innerText = "下一事件 ➡️";
+                btnNext.onclick = function() { nextLevel(); };
+            }
+
+            document.getElementById('level-indicator').innerText = `Level ${index + 1}/5`;
+            document.getElementById('progress-bar').style.width = `${(index / gameData.length) * 100}%`;
+            
+            document.getElementById('event-tag').innerText = data.tag;
+            document.getElementById('event-title').innerText = data.title;
+            document.getElementById('event-desc').innerHTML = data.desc;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = ''; 
+            
+            data.options.forEach((opt) => {
+                const calc = calculateOptionImpact(opt.type);
+                
+                const btn = document.createElement('button');
+                btn.className = "relative w-full text-left bg-white border border-slate-200 rounded-xl p-3 shadow-sm active:bg-slate-50 active:scale-[0.98] transition-all duration-100";
+                btn.onclick = () => handleDecision(opt, calc);
+
+                let riskLabel = "";
+                let costPreview = "";
+                
+                if (opt.type === 'C') {
+                    riskLabel = `<span class="text-[10px] px-2 py-0.5 rounded-full font-medium text-blue-600 bg-blue-50 border border-blue-100">安全合规</span>`;
+                    costPreview = `<span class='text-blue-600'>固定结果: 利润${fmt(calc.c.b)} | 工期+${fmt(calc.c.s)} | 声誉+${fmt(calc.c.r)}</span>`;
+                } else {
+                    const probPct = (calc.prob * 100).toFixed(0);
+                    const riskColor = opt.type === 'A' ? 'text-red-600 bg-red-50 border-red-100' : 'text-yellow-600 bg-yellow-50 border-yellow-100';
+                    const labelText = opt.type === 'A' ? '逃避 (高风险)' : '妥协 (中风险)';
+                    riskLabel = `<span class="text-[10px] px-2 py-0.5 rounded-full font-medium ${riskColor} border">${labelText}</span>`;
+                    
+                    costPreview = `
+                        <span class='text-slate-500'>${100-probPct}% 未暴露: 利润${fmt(calc.success.b)} | 工期+${fmt(calc.success.s)}</span><br>
+                        <span class='text-red-600'>${probPct}% 暴露: 利润${fmt(calc.fail.b)} | 工期+${fmt(calc.fail.s)} | 声誉${fmt(calc.fail.r)}</span>
+                    `;
+                }
+
+                btn.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="bg-slate-800 text-white font-bold w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-sm flex-none">${opt.type}</span>
+                        ${riskLabel}
+                    </div>
+                    <p class="text-sm font-bold text-slate-700 leading-tight mb-2">${opt.text}</p>
+                    <div class="text-[10px] bg-slate-50 p-2 rounded border border-slate-100 leading-snug">
+                        ${costPreview}
+                    </div>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function calculateOptionImpact(type) {
+            const r = globalContext.resource;
+            const s = globalContext.sensitivity;
+            
+            if (type === 'C') {
+                return { c: STRATEGY_LOGIC.C.cost[r] };
+            } else {
+                const logic = STRATEGY_LOGIC[type];
+                return {
+                    prob: logic.prob[s],
+                    fail: logic.fail[r],
+                    success: logic.success[r]
+                };
+            }
+        }
+
+        function handleDecision(opt, calc) {
+            decisionPath.push({ level: gameState.currentLevel, type: opt.type, exposed: false });
+            
+            if (opt.type === 'C') {
+                resolveSafe(opt, calc.c);
+            } else {
+                document.getElementById('screen-check').classList.remove('hidden');
+                document.getElementById('screen-check').classList.add('flex');
+                document.getElementById('check-text').innerText = `风险判定中 (暴露概率 ${(calc.prob * 100).toFixed(0)}%)...`;
+                setTimeout(() => {
+                    document.getElementById('screen-check').classList.add('hidden');
+                    document.getElementById('screen-check').classList.remove('flex');
+                    resolveRisk(opt, calc);
+                }, 1500);
+            }
+        }
+
+        function resolveSafe(opt, cost) {
+            applyResult({
+                budget: cost.b,
+                schedule: cost.s,
+                rep: cost.r,
+                isFail: false,
+                title: "合规通过",
+                desc: opt.successMsg,
+                learning: opt.learning
+            });
+        }
+
+        function resolveRisk(opt, calc) {
+            const isCaught = Math.random() < calc.prob; 
+            decisionPath[decisionPath.length - 1].exposed = isCaught;
+
+            if (isCaught) {
+                applyResult({
+                    budget: calc.fail.b,
+                    schedule: calc.fail.s,
+                    rep: calc.fail.r,
+                    isFail: true,
+                    title: "风险暴露！",
+                    desc: opt.riskMsg,
+                    learning: opt.learning
+                });
+            } else {
+                applyResult({
+                    budget: calc.success.b,
+                    schedule: calc.success.s,
+                    rep: calc.success.r,
+                    isFail: false,
+                    isLucky: true,
+                    title: "侥幸过关",
+                    desc: opt.luckyMsg,
+                    learning: opt.learning
+                });
+            }
+        }
+
+        function applyResult(result) {
+            updateStat('budget', result.budget);
+            updateStat('schedule', result.schedule);
+            updateStat('reputation', result.rep);
+
+            const screenResult = document.getElementById('screen-result');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('flex');
+            
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+            document.querySelector('#screen-result .overflow-y-auto').scrollTop = 0;
+
+            const rIcon = document.getElementById('result-icon');
+            const rTitle = document.getElementById('result-title');
+            const rDesc = document.getElementById('result-desc');
+            const rLearn = document.getElementById('result-learning');
+            const rBadge = document.getElementById('lucky-badge');
+
+            showDiff('show-diff-budget', result.budget, '利润');
+            showDiff('show-diff-schedule', result.schedule, '工期');
+            showDiff('show-diff-rep', result.rep, '声誉');
+
+            rDesc.innerText = result.desc;
+            rLearn.innerText = result.learning;
+            rBadge.classList.add('hidden');
+
+            if (result.isFail) {
+                rIcon.innerText = "🛑";
+                rTitle.className = "text-2xl font-black text-red-600 mb-4 text-center";
+                rTitle.innerText = result.title;
+                screenResult.classList.add('shake');
+            } else if (result.isLucky) {
+                rIcon.innerText = "😅";
+                rTitle.className = "text-2xl font-black text-orange-500 mb-4 text-center";
+                rTitle.innerText = result.title;
+                rBadge.classList.remove('hidden');
+                screenResult.classList.remove('shake');
+            } else {
+                rIcon.innerText = "✅";
+                rTitle.className = "text-2xl font-black text-emerald-600 mb-4 text-center";
+                rTitle.innerText = result.title;
+                screenResult.classList.remove('shake');
+            }
+        }
+
+        function showDiff(id, val, unit) {
+            const el = document.getElementById(id);
+            if (!val || val === 0) { el.classList.add('hidden'); return; }
+            el.classList.remove('hidden');
+            const prefix = val > 0 ? "+" : "";
+            // Fix: 变动值也显示小数
+            el.innerText = `${unit}${prefix}${val.toFixed(2)}`;
+            if (unit === '工期') {
+                el.className = val > 0 ? 'text-red-500' : 'text-emerald-500';
+            } else {
+                el.className = val > 0 ? 'text-emerald-500' : 'text-red-500';
+            }
+        }
+
+        function updateStat(key, delta) {
+            gameState[key] += delta;
+            updateUI();
+            if(delta !== 0) {
+                const floatEl = document.getElementById(`float-${key}`);
+                // Fix: 浮动动画数值显示小数
+                floatEl.innerText = delta > 0 ? `+${delta.toFixed(2)}` : delta.toFixed(2);
+                floatEl.className = `stat-float text-sm ${delta > 0 ? (key === 'schedule' ? 'text-red-600' : 'text-emerald-600') : (key === 'schedule' ? 'text-emerald-600' : 'text-red-600')}`;
+                floatEl.style.animation = 'none';
+                floatEl.offsetHeight; 
+                floatEl.style.animation = null; 
+            }
+        }
+
+        function updateUI() {
+            // Fix: 顶部状态栏强制小数
+            document.getElementById('val-budget').innerText = gameState.budget.toFixed(2);
+            document.getElementById('val-schedule').innerText = gameState.schedule.toFixed(2); 
+            document.getElementById('val-reputation').innerText = gameState.reputation.toFixed(2);
+            if (gameState.schedule > LIMIT_SCHEDULE) {
+                document.getElementById('val-schedule').className = "text-red-600 text-base font-bold animate-pulse";
+            } else {
+                document.getElementById('val-schedule').className = "text-blue-600 text-base";
+            }
+        }
+
+        function nextLevel() {
+            const nextIndex = gameState.currentLevel + 1;
+            loadLevel(nextIndex);
+        }
+
+        async function endGame() {
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            document.getElementById('screen-end').classList.remove('hidden');
+            document.getElementById('screen-end').classList.add('flex');
+            document.getElementById('progress-bar').style.width = '100%';
+            
+            document.querySelector('#screen-end .overflow-y-auto').scrollTop = 0;
+
+            let finalBudget = gameState.budget; // 先不取整，保留精度
+            let schedulePenalty = 0;
+            
+            if (gameState.schedule > LIMIT_SCHEDULE) {
+                const overdue = gameState.schedule - LIMIT_SCHEDULE;
+                schedulePenalty = Math.ceil(overdue * PENALTY_PER_MONTH); 
+                finalBudget -= schedulePenalty;
+                document.getElementById('end-overdue-stamp').classList.remove('hidden');
+            }
+            
+            gameState.budget = finalBudget; 
+            
+            // Fix: 完工报告显示小数
+            document.getElementById('end-budget').innerText = finalBudget.toFixed(2);
+            document.getElementById('end-schedule').innerText = gameState.schedule.toFixed(2);
+            document.getElementById('end-rep').innerText = gameState.reputation.toFixed(2);
+            
+            document.getElementById('comp-user-budget').innerText = finalBudget.toFixed(2);
+            document.getElementById('comp-user-schedule').innerText = gameState.schedule.toFixed(2);
+            document.getElementById('comp-user-rep').innerText = gameState.reputation.toFixed(2);
+
+            const fb = document.getElementById('end-feedback');
+            if (gameState.reputation < 60) {
+                fb.innerHTML = `<strong class="text-red-600 block mb-2">💀 项目列入黑名单</strong>声誉分过低，世行启动制裁程序。你赌输了。`;
+            } else if (schedulePenalty > 0) {
+                fb.innerHTML = `<strong class="text-orange-500 block mb-2">⚠️ 惨胜 (工期逾期)</strong>虽然你很努力，但工期超标导致了 <b>${schedulePenalty}万</b> 罚款。`;
+            } else if (finalBudget < 500) { 
+                fb.innerHTML = `<strong class="text-yellow-600 block mb-2">💸 成本严重超支</strong>为了合规或应对事故，你投入了巨额成本，利润微薄。`;
+            } else {
+                fb.innerHTML = `<strong class="text-emerald-600 block mb-2">🏆 完美交付</strong>在工期内高质量完工！这需要极高的运气或卓越的平衡能力。`;
+            }
+
+            updateBenchmarks();
+
+            document.getElementById('loading-stats').classList.remove('hidden');
+            
+            try {
+                const GameResult = AV.Object.extend('GameResult');
+                const result = new GameResult();
+                result.set('budget', finalBudget);
+                result.set('schedule', gameState.schedule);
+                result.set('reputation', gameState.reputation);
+                
+                result.set('esgScore', userProfile.esgScore);
+                result.set('riskScore', userProfile.riskScore);
+                result.set('survey_esg_raw', [userProfile.surveyData.esg1, userProfile.surveyData.esg2, userProfile.surveyData.esg3]);
+                result.set('survey_risk_raw', [userProfile.surveyData.risk1, userProfile.surveyData.risk2, userProfile.surveyData.risk3]);
+
+                result.set('ctx_resource', globalContext.resource);
+                result.set('ctx_sensitivity', globalContext.sensitivity);
+                
+                if(decisionPath && decisionPath.length > 0) {
+                     decisionPath.forEach((dp, index) => {
+                        const step = index + 1;
+                        if (dp) {
+                            result.set(`d${step}_type`, dp.type || 'N/A');
+                            result.set(`d${step}_exposed`, dp.exposed === undefined ? false : dp.exposed);
+                        }
+                    });
+                }
+
+                await result.save(); 
+            } catch(e) {
+                console.warn("Cloud Save Failed:", e);
+            }
+
+            await fetchAverageData();
+        }
+
+        function updateBenchmarks() {
+            const bestC = { b: 1000 + (5 * -80), s: 12.0 + (5 * 0.8), r: 100 + (5 * 12) };
+            const bestLuck = { b: 1000 + (5 * -16), s: 12.0 + (5 * 0.16), r: 100 + 0 };
+            
+            let worstS = 12.0 + (5 * 1.92);
+            let worstB = 1000 + (5 * -192);
+            let worstR = 100 + (5 * -24);
+            if (worstS > 16.0) { worstB -= Math.ceil((worstS - 16.0) * 100); }
+
+            // Fix: 基准值显示小数
+            document.getElementById('bench-compliance-budget').innerText = bestC.b.toFixed(2);
+            document.getElementById('bench-compliance-schedule').innerText = bestC.s.toFixed(2);
+            document.getElementById('bench-compliance-rep').innerText = bestC.r.toFixed(2);
+
+            document.getElementById('bench-luck-budget').innerText = bestLuck.b.toFixed(2);
+            document.getElementById('bench-luck-schedule').innerText = bestLuck.s.toFixed(2);
+            document.getElementById('bench-luck-rep').innerText = bestLuck.r.toFixed(2);
+
+            document.getElementById('bench-worst-budget').innerText = worstB.toFixed(2);
+            document.getElementById('bench-worst-schedule').innerText = worstS.toFixed(2);
+            document.getElementById('bench-worst-rep').innerText = worstR.toFixed(2);
+        }
+
+        function calcFallbackAvg() {
+             return { count: 0, budget: 500, schedule: 15.0, rep: 80 };
+        }
+
+        async function fetchAverageData() {
+            const avgLabel = document.getElementById('avg-label');
+            const elBudget = document.getElementById('avg-budget');
+            const elSchedule = document.getElementById('avg-schedule');
+            const elRep = document.getElementById('avg-rep');
+            
+            document.getElementById('loading-stats').classList.remove('hidden');
+
+            try {
+                const query = new AV.Query('GameResult');
+                query.limit(200); 
+                query.descending('createdAt');
+                
+                const results = await query.find().catch(err => []);
+
+                if (results && results.length > 0) {
+                    let sumB = 0, sumS = 0, sumR = 0;
+                    results.forEach(r => {
+                        sumB += (r.get('budget') || 0);
+                        sumS += (r.get('schedule') || 0);
+                        sumR += (r.get('reputation') || 0);
+                    });
+                    
+                    avgLabel.innerText = `👥 学员平均 (N=${results.length})`; 
+                    avgLabel.className = ""; 
+                    // Fix: 平均值显示小数
+                    elBudget.innerText = (sumB / results.length).toFixed(2);
+                    elSchedule.innerText = (sumS / results.length).toFixed(2);
+                    elRep.innerText = (sumR / results.length).toFixed(2);
+                } else {
+                    const fallback = calcFallbackAvg();
+                    avgLabel.innerText = `👥 暂无数据`;
+                    elBudget.innerText = "-";
+                    elSchedule.innerText = "-";
+                    elRep.innerText = "-";
+                }
+
+            } catch(e) {
+                console.error("Fetch Failed", e);
+                avgLabel.innerText = "⚠️ 连接失败";
+            }
+            document.getElementById('loading-stats').classList.add('hidden');
+        }
+
+        function forceRetryCloud() {
+            document.getElementById('avg-label').innerText = "🔄 ...";
+            fetchAverageData();
+        }
+    </script>
+<script>window.parent.postMessage({ action: "ready" }, "*"); 
+ 
+window.console = new Proxy(console, {
+  get(target, prop) {
+    if (['log', 'warn', 'error'].includes(prop)) {
+      return new Proxy(target[prop], {
+        apply(fn, thisArg, args) {
+          fn.apply(thisArg, args);
+          window.parent.postMessage({ action: 'console', 
+            type: prop, 
+            args: args.map((arg) => {
+              try {
+                return JSON.stringify(arg).replace(/^["']|["']$/g, '');
+              } catch (e) {
+                return arg;
+              }
+            }) 
+          }, '*');
+        }
+      });
+    }
+    return target[prop];
+  }
+});
+</script></body>
+</html>
