@@ -3,14 +3,13 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, height=device-height">
     <title>SunLink ESG 管理 | Experiment Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 移除 LeanCloud SDK，改用原生 Fetch 以避免 SDK 的环境检测报错 -->
-    
+    <!-- 引入 LeanCloud SDK (HTTPS) -->
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.15.0/dist/av-min.js"></script>
     <style>
+        /* 修复1: 去除 Google Fonts，使用系统默认字体栈，解决国内加载白屏和卡顿问题 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
             background-color: #f8fafc; 
@@ -70,9 +69,6 @@
         }
         
         .copyright-text { font-size: 9px; color: #cbd5e1; text-align: center; margin-top: 8px; font-family: sans-serif; }
-
-        /* 错误提示条 */
-        #network-status { display: none; }
     </style>
 </head>
 <body class="flex flex-col text-slate-800 bg-slate-100">
@@ -109,10 +105,6 @@
         <div class="w-full h-1 bg-slate-200 mt-2 rounded-full overflow-hidden">
             <div id="progress-bar" class="bg-blue-500 h-1 transition-all duration-500" style="width: 0%"></div>
         </div>
-        <!-- 离线提示 -->
-        <div id="network-status" class="w-full bg-orange-100 text-orange-700 text-[10px] text-center py-1 mt-1 rounded">
-            当前为离线模式 (数据无法同步)
-        </div>
     </header>
 
     <!-- 主内容区域 -->
@@ -132,6 +124,8 @@
                 <div class="mt-4 pt-6 border-t border-slate-100 w-full">
                     <p class="text-xs text-slate-400 font-medium">开发单位</p>
                     <p class="text-xs text-slate-600 font-bold mb-2">天津大学全球工程经营实验室</p>
+                    <p class="text-xs text-slate-400 font-medium">联系人</p>
+                    <p class="text-xs text-slate-600">傅老师 <a href="mailto:yongcheng_fu@126.com" class="text-blue-500 underline">yongcheng_fu@126.com</a></p>
                     <div class="copyright-text">© 2025 Tianjin University GIPC. All Rights Reserved.</div>
                 </div>
             </div>
@@ -142,7 +136,7 @@
             </div>
         </div>
 
-        <!-- 1.5 调查问卷 (含知情同意书) -->
+        <!-- 1.5 调查问卷 (更新：含知情同意书) -->
         <div id="screen-survey" class="hidden flex-col h-full fade-in absolute inset-0 z-20 bg-white">
             <div class="header-spacer"></div>
             <div class="px-6 pt-4 flex-1 overflow-y-auto pb-32">
@@ -212,7 +206,7 @@
             </div>
         </div>
 
-        <!-- 2. 简报 -->
+        <!-- 2. 简报 (新增示意图) -->
         <div id="screen-briefing" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
             <div class="flex-1 overflow-y-auto scroll-smooth pb-24">
                 <div class="header-spacer"></div>
@@ -284,7 +278,7 @@
             </div>
         </div>
 
-        <!-- 2.5 随机情境分配 -->
+        <!-- 2.5 随机情境分配 (带动画 + 描述 + 高亮 + 逻辑说明) -->
         <div id="screen-context" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
             <div class="header-spacer"></div>
             <div class="px-6 pt-4 flex-1 overflow-y-auto pb-24">
@@ -508,6 +502,8 @@
                     <div class="mt-4 w-full text-center">
                         <p class="text-xs text-slate-400 font-medium">开发单位</p>
                         <p class="text-xs text-slate-600 font-bold mb-2">天津大学全球工程经营实验室</p>
+                        <p class="text-xs text-slate-400 font-medium">联系人</p>
+                        <p class="text-xs text-slate-600">傅老师 <a href="mailto:yongcheng_fu@126.com" class="text-blue-500 underline">yongcheng_fu@126.com</a></p>
                         <div class="copyright-text">© 2025 Tianjin University GIPC. All Rights Reserved.</div>
                     </div>
                 </div>
@@ -523,8 +519,8 @@
 
     <script>
         // --- 全局配置 ---
-        const LIMIT_SCHEDULE = 16.0; 
-        const PENALTY_PER_MONTH = 100; 
+        const LIMIT_SCHEDULE = 16.0; // 工期红线
+        const PENALTY_PER_MONTH = 100; // 超过红线每月的罚款（万）
 
         // --- 实验变量 ---
         const CONTEXT_LEVELS = ['low', 'mid', 'high'];
@@ -533,7 +529,7 @@
             sensitivity: 'mid'  
         };
 
-        // --- 核心状态变量 ---
+        // --- 核心状态变量 (Fix v33.9.8) ---
         let gameState = { 
             budget: 1000, 
             schedule: 12.0, 
@@ -547,41 +543,52 @@
             surveyData: {}
         };
 
-        let decisionPath = []; 
+        let decisionPath = []; // 记录决策路径
 
-        // --- LeanCloud Config (Raw REST API) ---
-        const LC_APP_ID = "esL6o1jmpB3rVGlkjsE6OFRu-MdYXbMMI";
-        const LC_APP_KEY = "B1fDIAC8C2dXizdlslG7Cl1D";
-        const LC_API_URL = "https://esl6o1jm.api.lncldglobal.com/1.1/classes/GameResult";
+        // --- 修复: LeanCloud Init (使用新提供的国际版 Key) ---
+        try {
+            const lcConfig = {
+                appId: "esL6o1jmpB3rVGlkjsE6OFRu-MdYXbMMI", 
+                appKey: "B1fDIAC8C2dXizdlslG7Cl1D",          
+                serverURLs: "https://esl6o1jm.api.lncldglobal.com" 
+            };
+            if (typeof AV !== 'undefined') {
+                AV.init(lcConfig);
+            } else if (typeof LC !== 'undefined') {
+                LC.init(lcConfig);
+            }
+        } catch(e) { 
+            console.warn("LC Init Error:", e); 
+        }
 
         // --- 数值逻辑引擎 ---
         const STRATEGY_LOGIC = {
-            C: { 
+            C: { // 合规
                 cost: {
                     high: { b: -80, s: 0.8, r: 12 },
                     mid:  { b: -100, s: 1.0, r: 10 },
                     low:  { b: -120, s: 1.2, r: 8 }
                 }
             },
-            B: { 
-                prob: { 
+            B: { // 妥协
+                prob: { // 暴露概率
                     high: 0.5, 
                     mid: 0.4,
                     low: 0.3
                 },
-                fail: { 
+                fail: { // 暴露后果
                     high: { b: -104, s: 1.04, r: -8 },
                     mid:  { b: -130, s: 1.3, r: -10 },
                     low:  { b: -156, s: 1.56, r: -12 }
                 },
-                success: { 
+                success: { // 不暴露后果
                     high: { b: -32, s: 0.32, r: 0 },
                     mid:  { b: -40, s: 0.4, r: 0 },
                     low:  { b: -48, s: 0.48, r: 0 }
                 }
             },
-            A: { 
-                prob: { 
+            A: { // 逃避 (原抗拒)
+                prob: { // 暴露概率
                     high: 0.7,
                     mid: 0.6,
                     low: 0.5
@@ -648,6 +655,7 @@
             }
         ];
 
+        // --- 辅助工具: 格式化数字 ---
         function fmt(n) {
             if(typeof n !== 'number') return n;
             return n.toFixed(2);
@@ -684,6 +692,7 @@
 
         function selectLikert(name, val, el) {
             userProfile.surveyData[name] = val;
+            // UI update
             const parent = el.parentElement;
             Array.from(parent.children).forEach(child => child.classList.remove('selected'));
             el.classList.add('selected');
@@ -913,6 +922,7 @@
         // --- 游戏核心逻辑 ---
 
         function startGame() {
+            // Reset Game State
             gameState = { 
                 budget: 1000, 
                 schedule: 12.0, 
@@ -1132,6 +1142,7 @@
             if (!val || val === 0) { el.classList.add('hidden'); return; }
             el.classList.remove('hidden');
             const prefix = val > 0 ? "+" : "";
+            // Fix: 变动值也显示小数
             el.innerText = `${unit}${prefix}${val.toFixed(2)}`;
             if (unit === '工期') {
                 el.className = val > 0 ? 'text-red-500' : 'text-emerald-500';
@@ -1145,6 +1156,7 @@
             updateUI();
             if(delta !== 0) {
                 const floatEl = document.getElementById(`float-${key}`);
+                // Fix: 浮动动画数值显示小数
                 floatEl.innerText = delta > 0 ? `+${delta.toFixed(2)}` : delta.toFixed(2);
                 floatEl.className = `stat-float text-sm ${delta > 0 ? (key === 'schedule' ? 'text-red-600' : 'text-emerald-600') : (key === 'schedule' ? 'text-emerald-600' : 'text-red-600')}`;
                 floatEl.style.animation = 'none';
@@ -1154,6 +1166,7 @@
         }
 
         function updateUI() {
+            // Fix: 顶部状态栏强制小数
             document.getElementById('val-budget').innerText = gameState.budget.toFixed(2);
             document.getElementById('val-schedule').innerText = gameState.schedule.toFixed(2); 
             document.getElementById('val-reputation').innerText = gameState.reputation.toFixed(2);
@@ -1169,7 +1182,6 @@
             loadLevel(nextIndex);
         }
 
-        // --- 核心修复：使用原生 Fetch 并在本地环境（content://）下吞掉 CORS 错误 ---
         async function endGame() {
             document.getElementById('screen-result').classList.add('hidden');
             document.getElementById('screen-result').classList.remove('flex');
@@ -1191,6 +1203,7 @@
             
             gameState.budget = finalBudget; 
             
+            // Fix: 完工报告显示小数
             document.getElementById('end-budget').innerText = finalBudget.toFixed(2);
             document.getElementById('end-schedule').innerText = gameState.schedule.toFixed(2);
             document.getElementById('end-rep').innerText = gameState.reputation.toFixed(2);
@@ -1214,106 +1227,37 @@
 
             document.getElementById('loading-stats').classList.remove('hidden');
             
-            // 构建数据对象
-            const saveData = {
-                budget: finalBudget,
-                schedule: gameState.schedule,
-                reputation: gameState.reputation,
-                esgScore: userProfile.esgScore,
-                riskScore: userProfile.riskScore,
-                survey_esg_raw: [userProfile.surveyData.esg1, userProfile.surveyData.esg2, userProfile.surveyData.esg3],
-                survey_risk_raw: [userProfile.surveyData.risk1, userProfile.surveyData.risk2, userProfile.surveyData.risk3],
-                ctx_resource: globalContext.resource,
-                ctx_sensitivity: globalContext.sensitivity
-            };
-            
-            if(decisionPath && decisionPath.length > 0) {
-                decisionPath.forEach((dp, index) => {
-                    const step = index + 1;
-                    if (dp) {
-                        saveData[`d${step}_type`] = dp.type || 'N/A';
-                        saveData[`d${step}_exposed`] = dp.exposed === undefined ? false : dp.exposed;
-                    }
-                });
-            }
-
             try {
-                // 尝试发送数据
-                const response = await fetch(LC_API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'X-LC-Id': LC_APP_ID,
-                        'X-LC-Key': LC_APP_KEY,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(saveData)
-                });
+                const GameResult = AV.Object.extend('GameResult');
+                const result = new GameResult();
+                result.set('budget', finalBudget);
+                result.set('schedule', gameState.schedule);
+                result.set('reputation', gameState.reputation);
+                
+                result.set('esgScore', userProfile.esgScore);
+                result.set('riskScore', userProfile.riskScore);
+                result.set('survey_esg_raw', [userProfile.surveyData.esg1, userProfile.surveyData.esg2, userProfile.surveyData.esg3]);
+                result.set('survey_risk_raw', [userProfile.surveyData.risk1, userProfile.surveyData.risk2, userProfile.surveyData.risk3]);
 
-                if (!response.ok) throw new Error("HTTP " + response.status);
-                console.log("Save Success");
+                result.set('ctx_resource', globalContext.resource);
+                result.set('ctx_sensitivity', globalContext.sensitivity);
+                
+                if(decisionPath && decisionPath.length > 0) {
+                     decisionPath.forEach((dp, index) => {
+                        const step = index + 1;
+                        if (dp) {
+                            result.set(`d${step}_type`, dp.type || 'N/A');
+                            result.set(`d${step}_exposed`, dp.exposed === undefined ? false : dp.exposed);
+                        }
+                    });
+                }
 
+                await result.save(); 
             } catch(e) {
-                // 核心修复：捕获所有网络错误（包括 CORS 拦截），不弹窗，仅显示离线状态
-                console.warn("Data Sync Failed (Likely CORS/Local File issue):", e);
-                document.getElementById('network-status').style.display = 'block';
+                console.warn("Cloud Save Failed:", e);
             }
 
             await fetchAverageData();
-        }
-
-        async function fetchAverageData() {
-            const avgLabel = document.getElementById('avg-label');
-            const elBudget = document.getElementById('avg-budget');
-            const elSchedule = document.getElementById('avg-schedule');
-            const elRep = document.getElementById('avg-rep');
-            
-            document.getElementById('loading-stats').classList.remove('hidden');
-
-            try {
-                const response = await fetch(LC_API_URL + '?limit=200&order=-createdAt', {
-                    method: 'GET',
-                    headers: {
-                        'X-LC-Id': LC_APP_ID,
-                        'X-LC-Key': LC_APP_KEY,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if(!response.ok) throw new Error("Fetch Error");
-                
-                const data = await response.json();
-                const results = data.results || [];
-
-                if (results && results.length > 0) {
-                    let sumB = 0, sumS = 0, sumR = 0;
-                    results.forEach(r => {
-                        sumB += (r.budget || 0);
-                        sumS += (r.schedule || 0);
-                        sumR += (r.reputation || 0);
-                    });
-                    
-                    avgLabel.innerText = `👥 学员平均 (N=${results.length})`; 
-                    avgLabel.className = ""; 
-                    elBudget.innerText = (sumB / results.length).toFixed(2);
-                    elSchedule.innerText = (sumS / results.length).toFixed(2);
-                    elRep.innerText = (sumR / results.length).toFixed(2);
-                } else {
-                    avgLabel.innerText = `👥 暂无数据`;
-                    elBudget.innerText = "-";
-                    elSchedule.innerText = "-";
-                    elRep.innerText = "-";
-                }
-
-            } catch(e) {
-                // 核心修复：离线模式下优雅降级
-                console.error("Fetch Failed", e);
-                avgLabel.innerText = "⚠️ 离线模式";
-                elBudget.innerText = "本地";
-                elSchedule.innerText = "本地";
-                elRep.innerText = "本地";
-                document.getElementById('network-status').style.display = 'block';
-            }
-            document.getElementById('loading-stats').classList.add('hidden');
         }
 
         function updateBenchmarks() {
@@ -1325,6 +1269,7 @@
             let worstR = 100 + (5 * -24);
             if (worstS > 16.0) { worstB -= Math.ceil((worstS - 16.0) * 100); }
 
+            // Fix: 基准值显示小数
             document.getElementById('bench-compliance-budget').innerText = bestC.b.toFixed(2);
             document.getElementById('bench-compliance-schedule').innerText = bestC.s.toFixed(2);
             document.getElementById('bench-compliance-rep').innerText = bestC.r.toFixed(2);
@@ -1336,6 +1281,54 @@
             document.getElementById('bench-worst-budget').innerText = worstB.toFixed(2);
             document.getElementById('bench-worst-schedule').innerText = worstS.toFixed(2);
             document.getElementById('bench-worst-rep').innerText = worstR.toFixed(2);
+        }
+
+        function calcFallbackAvg() {
+             return { count: 0, budget: 500, schedule: 15.0, rep: 80 };
+        }
+
+        async function fetchAverageData() {
+            const avgLabel = document.getElementById('avg-label');
+            const elBudget = document.getElementById('avg-budget');
+            const elSchedule = document.getElementById('avg-schedule');
+            const elRep = document.getElementById('avg-rep');
+            
+            document.getElementById('loading-stats').classList.remove('hidden');
+
+            try {
+                const query = new AV.Query('GameResult');
+                query.limit(200); 
+                query.descending('createdAt');
+                
+                const results = await query.find().catch(err => []);
+
+                if (results && results.length > 0) {
+                    let sumB = 0, sumS = 0, sumR = 0;
+                    results.forEach(r => {
+                        sumB += (r.get('budget') || 0);
+                        sumS += (r.get('schedule') || 0);
+                        sumR += (r.get('reputation') || 0);
+                    });
+                    
+                    avgLabel.innerText = `👥 学员平均 (N=${results.length})`; 
+                    avgLabel.className = ""; 
+                    // Fix: 平均值显示小数
+                    elBudget.innerText = (sumB / results.length).toFixed(2);
+                    elSchedule.innerText = (sumS / results.length).toFixed(2);
+                    elRep.innerText = (sumR / results.length).toFixed(2);
+                } else {
+                    const fallback = calcFallbackAvg();
+                    avgLabel.innerText = `👥 暂无数据`;
+                    elBudget.innerText = "-";
+                    elSchedule.innerText = "-";
+                    elRep.innerText = "-";
+                }
+
+            } catch(e) {
+                console.error("Fetch Failed", e);
+                avgLabel.innerText = "⚠️ 连接失败";
+            }
+            document.getElementById('loading-stats').classList.add('hidden');
         }
 
         function forceRetryCloud() {
