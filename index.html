@@ -8,8 +8,6 @@
     <title>SunLink ESG 管理 | Experiment Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 移除 LeanCloud SDK，改用原生 Fetch 以避免 SDK 的环境检测报错 -->
-    
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -39,7 +37,9 @@
         .matrix-table th, .matrix-table td { border: 1px solid #cbd5e1; padding: 4px 2px; }
         .matrix-table th { background: #e2e8f0; color: #334155; }
         .matrix-highlight { background-color: #dbeafe; border: 2px solid #2563eb !important; font-weight: bold; }
+        /* 概率行样式调整，支持内部span高亮 */
         .prob-row { font-size: 8px; color: #64748b; background: #f8fafc; }
+        .prob-highlight { color: #dc2626; font-weight: bold; background-color: #fef2f2; padding: 0 2px; border-radius: 2px; border: 1px solid #fee2e2; }
 
         /* 问卷样式 */
         .likert-scale { display: flex; justify-content: space-between; margin-top: 8px; margin-bottom: 16px; }
@@ -73,14 +73,23 @@
         
         /* 错误提示条 */
         #network-status { display: none; }
+
+        /* 跳动地球动画 */
+        .bounce-earth { animation: bounce 2s infinite; font-size: 80px; display: block; text-align: center; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
+
     </style>
 </head>
 <body class="flex flex-col text-slate-800 bg-slate-100">
 
-    <!-- 顶部导航栏 (ID="main-header") -->
-    <header id="main-header" class="bg-white shadow-sm border-b border-slate-200 z-50 px-3 py-2 w-full absolute top-0 left-0">
+    <!-- 顶部导航栏 (ID="main-header") - 初始隐藏，进入Briefing后显示 -->
+    <header id="main-header" class="bg-white shadow-sm border-b border-slate-200 z-50 px-3 py-2 w-full absolute top-0 left-0 hidden">
         <div class="flex justify-between items-center mb-2 pt-safe-top mt-2"> 
-            <img src="logo.png" alt="SunLink" class="h-8 object-contain" onerror="this.src='https://placehold.co/100x40/3b82f6/ffffff?text=SunLink'">
+            <!-- 文字 Logo 样式 -->
+            <div class="flex items-center gap-2">
+                <div class="text-xl">🌍</div>
+                <div class="font-black text-lg tracking-tight text-slate-800">SunLink <span class="text-blue-600">ESG</span></div>
+            </div>
             <div class="text-xs text-slate-400 font-bold" id="level-indicator">Mission Briefing</div>
         </div>
         
@@ -120,11 +129,13 @@
         
         <!-- 1. 开场 -->
         <div id="screen-start" class="absolute inset-0 z-20 flex flex-col bg-white fade-in overflow-y-auto">
-            <div class="header-spacer"></div>
+            
             <div class="flex-1 p-6 flex flex-col items-center justify-center text-center pb-40">
-                <div class="text-6xl mb-6 animate-bounce">🌍</div>
-                <h2 class="text-xl font-bold text-slate-800 mb-2">SunLink ESG 管理挑战</h2>
-                <p class="text-sm font-medium text-blue-600 mb-4">欢迎来到 SunLink 光伏+输变电项目</p>
+                <!-- 跳动地球移到这里，文字上方 -->
+                <div class="bounce-earth mb-4">🌍</div>
+                
+                <h2 class="text-2xl font-black text-slate-800 mb-2">SunLink <span class="text-blue-600">ESG</span></h2>
+                <p class="text-sm font-medium text-slate-500 mb-4">国际工程管理模拟挑战</p>
                 <p class="text-sm text-slate-600 mb-8 leading-relaxed px-4">
                     你需要平衡<b>工期压力</b>、<b>项目利润</b>与<b>合规要求</b><br>
                     每一个决定都将影响项目的最终命运
@@ -148,7 +159,12 @@
 
         <!-- 1.5 调查问卷 (含知情同意书) -->
         <div id="screen-survey" class="hidden flex-col h-full fade-in absolute inset-0 z-20 bg-white">
-            <div class="header-spacer"></div>
+            <!-- SunLink 文字图标 -->
+            <div class="pt-4 pb-2 px-6 flex justify-center items-center border-b border-slate-100 bg-white z-10">
+                 <div class="text-2xl mr-2">🌍</div>
+                 <div class="font-black text-xl tracking-tight text-slate-800">SunLink <span class="text-blue-600">ESG</span></div>
+            </div>
+
             <div class="px-6 pt-4 flex-1 overflow-y-auto pb-32">
                 
                 <!-- 知情同意书 -->
@@ -167,7 +183,8 @@
                 <form id="survey-form" onsubmit="submitSurvey(event)">
                     <!-- ESG 认同 -->
                     <div class="mb-6">
-                        <p class="text-xs font-bold text-blue-600 mb-2 uppercase">第一部分：价值判断</p>
+                        <!-- 修改标题为 ESG 认同 -->
+                        <p class="text-xs font-bold text-blue-600 mb-2 uppercase">第一部分：ESG 认同</p>
                         
                         <div class="mb-4">
                             <p class="text-sm font-medium mb-2">1. 我认为 ESG 主要是为了公关形象，对项目实质价值有限。</p>
@@ -213,7 +230,7 @@
             </div>
         </div>
 
-        <!-- 2. 简报 -->
+        <!-- 2. 简报 (此时显示Header) -->
         <div id="screen-briefing" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
             <div class="flex-1 overflow-y-auto scroll-smooth pb-24">
                 <div class="header-spacer"></div>
@@ -225,6 +242,22 @@
                         <img src="https://image.pollinations.ai/prompt/A%20realistic,%20wide-angle%20engineering%20visualization%20of%20a%20large-scale%20solar%20power%20plant%20project%20in%20an%20African%20savanna%20setting.%20The%20foreground%20features%20rows%20of%20modern%20photovoltaic%20panels%20glistening%20in%20the%20sun.%20In%20the%20middle%20distance,%20high-voltage%20transmission%20towers%20(132kV%20lattice%20steel%20towers)%20stretch%20across%20the%20landscape,%20connecting%20the%20solar%20farm%20to%20the%20horizon.%20The%20background%20shows%20a%20vast,%20open%20savanna%20with%20sparse%20acacia%20trees%20and%20a%20clear%20blue%20sky.%20The%20style%20should%20be%20professional,%20similar%20to%20an%20architectural%20rendering%20or%20infrastructure%20project%20photo,%20bright%20and%20clear.?width=1536&height=1024&nologo=true" alt="Project Visualization" class="w-full h-full object-cover">
                         <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-900/60 to-transparent p-2">
                             <p class="text-white text-xs font-bold">100MW 光伏 + 132kV 输电线路</p>
+                        </div>
+                    </div>
+
+                    <!-- 增加基准数据展示 -->
+                    <div class="grid grid-cols-3 gap-2 mb-4 text-center">
+                        <div class="bg-emerald-50 border border-emerald-100 p-2 rounded">
+                            <div class="text-[10px] text-emerald-600 mb-0.5">初始利润</div>
+                            <div class="text-sm font-bold text-emerald-800">1000万</div>
+                        </div>
+                        <div class="bg-blue-50 border border-blue-100 p-2 rounded">
+                            <div class="text-[10px] text-blue-600 mb-0.5">预计工期</div>
+                            <div class="text-sm font-bold text-blue-800">12个月</div>
+                        </div>
+                        <div class="bg-yellow-50 border border-yellow-100 p-2 rounded">
+                            <div class="text-[10px] text-yellow-600 mb-0.5">初始声誉</div>
+                            <div class="text-sm font-bold text-yellow-800">100分</div>
                         </div>
                     </div>
 
@@ -251,7 +284,7 @@
                             <ul class="list-disc pl-4 space-y-1 text-xs leading-relaxed">
                                 <li><strong>EPC 总承包</strong>；</li>
                                 <li>你所在公司是该项目 EPC 总承包商，你担任<strong>项目经理</strong>角色；</li>
-                                <li class="text-red-700 bg-red-50 p-1 rounded font-bold">关键条款：项目当前预计12个月完工。合同工期16个月，误期损害赔偿费100万/月。</li>
+                                <li class="text-red-700 bg-red-50 p-1 rounded font-bold">关键条款：合同工期16个月，误期损害赔偿费100万/月。</li>
                             </ul>
                         </div>
 
@@ -365,7 +398,7 @@
                 <div class="overflow-x-auto border border-slate-200 rounded shadow-sm">
                     <div id="matrix-container"></div> <!-- JS 生成表格 -->
                 </div>
-                <p class="text-[10px] text-slate-400 mt-2 italic text-center">*表格中高亮列为您当前的资源条件，概率行高亮为您当前的敏感度</p>
+                <p class="text-[10px] text-slate-400 mt-2 italic text-center">*表格中高亮列为您当前的资源条件，高亮文字为您当前的敏感度概率</p>
             </div>
             <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30 pb-safe-area">
                 <button onclick="startGame()" class="w-full bg-red-600 hover:bg-red-700 text-white text-lg font-bold py-3 rounded-xl shadow-lg">
@@ -424,9 +457,15 @@
 
         <!-- 6. 完工报告 -->
         <div id="screen-end" class="hidden absolute inset-0 z-20 flex flex-col items-center bg-white fade-in">
+            
+            <!-- 顶部添加 SunLink 文字图标 -->
+            <div class="pt-4 pb-2 px-6 flex justify-center items-center border-b border-slate-100 bg-white z-10 flex-none w-full">
+                 <div class="text-2xl mr-2">🌍</div>
+                 <div class="font-black text-xl tracking-tight text-slate-800">SunLink <span class="text-blue-600">ESG</span></div>
+            </div>
+
             <div class="flex-1 overflow-y-auto w-full flex flex-col items-center pb-40">
-                <!-- 这里不需要 header-spacer，因为header隐藏了 -->
-                <div class="h-12"></div> <!-- 简单的顶部留白 -->
+                
                 <div class="px-6 pt-2 w-full flex flex-col items-center">
                     <div id="end-icon" class="text-6xl mt-2 mb-4">🏆</div>
                     <h2 class="text-2xl font-bold text-slate-800 mb-4">完工报告</h2>
@@ -553,6 +592,9 @@
             riskScore: 0,
             surveyData: {}
         };
+        
+        // 保存当前会话的 objectId，用于在计算平均值时排除自己
+        let currentSessionId = null;
 
         let decisionPath = []; 
 
@@ -645,7 +687,8 @@
                 ]
             },
             {
-                id: 5, tag: "ESS5 土地征收", title: "危机事件5：看不见的“邻居”",
+                // 修改 TAG
+                id: 5, tag: "ESS5 土地征用和非自愿移民", title: "危机事件5：看不见的“邻居”",
                 desc: "<strong>【事件描述】</strong><br>在项目外围的一片荒地上，你们计划建设临时堆料场。土地权属显示这是“国有荒地”，手续齐全。但进场时发现，有几个游牧家庭（无固定居所）正在这里临时搭帐篷放牧。他们没有土地证，但声称这里是他们百年的季节性牧场。",
                 options: [
                     { type: "A", text: "这是国有土地，我们有证。通知警察和政府，请他们依法离开。", riskRole: "人权观察", riskMsg: "强驱视频被曝光。ESS5 保护无证的传统使用者，你们严重违规。", luckyMsg: "他们看对方人多势众，吓跑了。", learning: "土地证不是唯一依据，生计和传统权益必须被尊重。" },
@@ -674,11 +717,12 @@
                 const name = el.dataset.name;
                 for(let i=1; i<=5; i++) {
                     let label = "";
-                    if(i===1) label = "非常<br>不同意";
+                    // 修改文案：非常 -> 完全
+                    if(i===1) label = "完全<br>不同意";
                     if(i===2) label = "不同意";
                     if(i===3) label = "中立";
                     if(i===4) label = "同意";
-                    if(i===5) label = "非常<br>同意";
+                    if(i===5) label = "完全<br>同意";
                     el.innerHTML += `
                         <div class="likert-opt" onclick="selectLikert('${name}', ${i}, this)">
                             <div class="likert-circle">${i}</div>
@@ -719,6 +763,10 @@
         function goToBriefing() {
             document.getElementById('screen-survey').classList.add('hidden');
             document.getElementById('screen-survey').classList.remove('flex');
+            
+            // 进入Briefing时，显示Header
+            document.getElementById('main-header').classList.remove('hidden');
+            
             document.getElementById('screen-briefing').classList.remove('hidden');
             document.getElementById('screen-briefing').classList.add('flex');
         }
@@ -801,11 +849,29 @@
             renderMatrix();
         }
 
+        // 辅助函数：根据当前敏感度生成高亮概率文本
+        function highlightProb(targetSen, text) {
+            // text 格式示例 "低敏感30% | 中敏感40% | 高敏感50%"
+            if (globalContext.sensitivity === targetSen) {
+                return `<span class="prob-highlight">${text}</span>`;
+            }
+            return text;
+        }
+        
+        // 全局辅助：拆解并重建概率字符串，实现精准高亮
+        function buildProbString(lowText, midText, highText) {
+            const s = globalContext.sensitivity;
+            const t1 = s === 'low' ? `<span class="prob-highlight">${lowText}</span>` : lowText;
+            const t2 = s === 'mid' ? `<span class="prob-highlight">${midText}</span>` : midText;
+            const t3 = s === 'high' ? `<span class="prob-highlight">${highText}</span>` : highText;
+            return `暴露概率: ${t1} | ${t2} | ${t3}`;
+        }
+
         function renderMatrix() {
             const r = globalContext.resource;
-            const s = globalContext.sensitivity;
+            // const s = globalContext.sensitivity; // 不需要直接用，用辅助函数
             
-            document.getElementById('user-ctx-summary').innerText = `${getResDescShort(r)} + ${getSenDescShort(s)}`;
+            document.getElementById('user-ctx-summary').innerText = `${getResDescShort(r)} + ${getSenDescShort(globalContext.sensitivity)}`;
             
             let html = `
                 <table class="matrix-table">
@@ -853,7 +919,9 @@
             html += `
                 <tr>
                     <td rowspan="3" class="font-bold text-yellow-600">B 妥协</td>
-                    <td class="prob-row ${s==='low'?'matrix-highlight':''}" colspan="10">暴露概率: 低敏感30% | 中敏感40% | 高敏感50%</td>
+                    <td class="prob-row" colspan="10">
+                        ${buildProbString('低敏感30%', '中敏感40%', '高敏感50%')}
+                    </td>
                 </tr>
                 <tr>
                     <td class="text-[8px]">未暴露</td>
@@ -885,7 +953,9 @@
             html += `
                 <tr>
                     <td rowspan="3" class="font-bold text-red-600">A 逃避</td>
-                    <td class="prob-row ${s==='low'?'matrix-highlight':''}" colspan="10">暴露概率: 低敏感50% | 中敏感60% | 高敏感70%</td>
+                    <td class="prob-row" colspan="10">
+                        ${buildProbString('低敏感50%', '中敏感60%', '高敏感70%')}
+                    </td>
                 </tr>
                 <tr>
                     <td class="text-[8px]">未暴露</td>
@@ -928,8 +998,6 @@
             };
             decisionPath = [];
 
-            // 重置UI，并确保Header显示
-            document.getElementById('main-header').classList.remove('hidden'); 
             updateUI();
             
             document.getElementById('screen-matrix').classList.add('hidden');
@@ -1263,11 +1331,15 @@
                 });
 
                 if (!response.ok) throw new Error("HTTP " + response.status);
-                console.log("Save Success");
+                const resultJson = await response.json();
+                
+                // 记录当前提交的ID，用于后续排除
+                currentSessionId = resultJson.objectId;
+                console.log("Save Success, ID:", currentSessionId);
 
             } catch(e) {
                 // 离线模式下优雅降级
-                console.warn("Data Sync Failed (Likely CORS/Local File issue):", e);
+                console.warn("Data Sync Failed:", e);
                 document.getElementById('network-status').style.display = 'block';
             }
 
@@ -1295,7 +1367,12 @@
                 if(!response.ok) throw new Error("Fetch Error");
                 
                 const data = await response.json();
-                const results = data.results || [];
+                let results = data.results || [];
+
+                // 排除当前用户的数据
+                if (currentSessionId) {
+                    results = results.filter(r => r.objectId !== currentSessionId);
+                }
 
                 if (results && results.length > 0) {
                     let sumB = 0, sumS = 0, sumR = 0;
@@ -1311,7 +1388,8 @@
                     elSchedule.innerText = (sumS / results.length).toFixed(2);
                     elRep.innerText = (sumR / results.length).toFixed(2);
                 } else {
-                    avgLabel.innerText = `👥 暂无数据`;
+                    // 如果排除后没有数据（或者本来就是第一个人）
+                    avgLabel.innerText = `👥 暂无其他数据`;
                     elBudget.innerText = "-";
                     elSchedule.innerText = "-";
                     elRep.innerText = "-";
