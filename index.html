@@ -1169,7 +1169,6 @@
             loadLevel(nextIndex);
         }
 
-        // --- 核心修复：使用原生 Fetch 并在本地环境（content://）下吞掉 CORS 错误 ---
         async function endGame() {
             document.getElementById('screen-result').classList.add('hidden');
             document.getElementById('screen-result').classList.remove('flex');
@@ -1191,6 +1190,9 @@
             
             gameState.budget = finalBudget; 
             
+            // 核心修复：强制更新顶部 UI，确保罚款后的利润和红色的工期能同步显示
+            updateUI();
+
             document.getElementById('end-budget').innerText = finalBudget.toFixed(2);
             document.getElementById('end-schedule').innerText = gameState.schedule.toFixed(2);
             document.getElementById('end-rep').innerText = gameState.reputation.toFixed(2);
@@ -1253,7 +1255,7 @@
                 console.log("Save Success");
 
             } catch(e) {
-                // 核心修复：捕获所有网络错误（包括 CORS 拦截），不弹窗，仅显示离线状态
+                // 离线模式下优雅降级
                 console.warn("Data Sync Failed (Likely CORS/Local File issue):", e);
                 document.getElementById('network-status').style.display = 'block';
             }
@@ -1305,7 +1307,7 @@
                 }
 
             } catch(e) {
-                // 核心修复：离线模式下优雅降级
+                // 离线模式下优雅降级
                 console.error("Fetch Failed", e);
                 avgLabel.innerText = "⚠️ 离线模式";
                 elBudget.innerText = "本地";
