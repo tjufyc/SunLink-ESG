@@ -69,16 +69,16 @@
             box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
         }
         
-        .copyright-text { font-size: 9px; color: #cbd5e1; text-align: center; margin-top: 8px; font-family: sans-serif; }
-
+        .copyright-text { font-size: 9px; color: #cbd5e1; text-align: center; margin-top: 12px; font-family: sans-serif; }
+        
         /* 错误提示条 */
         #network-status { display: none; }
     </style>
 </head>
 <body class="flex flex-col text-slate-800 bg-slate-100">
 
-    <!-- 顶部导航栏 -->
-    <header class="bg-white shadow-sm border-b border-slate-200 z-50 px-3 py-2 w-full absolute top-0 left-0">
+    <!-- 顶部导航栏 (ID="main-header") -->
+    <header id="main-header" class="bg-white shadow-sm border-b border-slate-200 z-50 px-3 py-2 w-full absolute top-0 left-0">
         <div class="flex justify-between items-center mb-2 pt-safe-top mt-2"> 
             <img src="logo.png" alt="SunLink" class="h-8 object-contain" onerror="this.src='https://placehold.co/100x40/3b82f6/ffffff?text=SunLink'">
             <div class="text-xs text-slate-400 font-bold" id="level-indicator">Mission Briefing</div>
@@ -131,7 +131,11 @@
                 </p>
                 <div class="mt-4 pt-6 border-t border-slate-100 w-full">
                     <p class="text-xs text-slate-400 font-medium">开发单位</p>
-                    <p class="text-xs text-slate-600 font-bold mb-2">天津大学全球工程经营实验室</p>
+                    <p class="text-xs text-slate-600 font-bold mb-4">天津大学全球工程经营实验室</p>
+                    
+                    <p class="text-xs text-slate-400 font-medium">联系人</p>
+                    <p class="text-xs text-slate-600 font-bold mb-2">傅老师 yongcheng_fu@126.com</p>
+                    
                     <div class="copyright-text">© 2025 Tianjin University GIPC. All Rights Reserved.</div>
                 </div>
             </div>
@@ -158,10 +162,7 @@
                     </ul>
                 </div>
 
-                <h2 class="text-xl font-black text-slate-800 mb-2">📋 实验前小调查</h2>
-                <p class="text-xs text-slate-400 mb-6">
-                    开始之前，请先回答以下问题。
-                </p>
+                <h2 class="text-xl font-black text-slate-800 mb-6">📋 实验前小调查</h2>
                 
                 <form id="survey-form" onsubmit="submitSurvey(event)">
                     <!-- ESG 认同 -->
@@ -424,7 +425,8 @@
         <!-- 6. 完工报告 -->
         <div id="screen-end" class="hidden absolute inset-0 z-20 flex flex-col items-center bg-white fade-in">
             <div class="flex-1 overflow-y-auto w-full flex flex-col items-center pb-40">
-                <div class="header-spacer"></div>
+                <!-- 这里不需要 header-spacer，因为header隐藏了 -->
+                <div class="h-12"></div> <!-- 简单的顶部留白 -->
                 <div class="px-6 pt-2 w-full flex flex-col items-center">
                     <div id="end-icon" class="text-6xl mt-2 mb-4">🏆</div>
                     <h2 class="text-2xl font-bold text-slate-800 mb-4">完工报告</h2>
@@ -505,9 +507,14 @@
                         </p>
                     </div>
 
+                    <!-- 补充回来的联系方式 -->
                     <div class="mt-4 w-full text-center">
                         <p class="text-xs text-slate-400 font-medium">开发单位</p>
-                        <p class="text-xs text-slate-600 font-bold mb-2">天津大学全球工程经营实验室</p>
+                        <p class="text-xs text-slate-600 font-bold mb-4">天津大学全球工程经营实验室</p>
+                        
+                        <p class="text-xs text-slate-400 font-medium">联系人</p>
+                        <p class="text-xs text-slate-600 font-bold mb-2">傅老师 yongcheng_fu@126.com</p>
+                        
                         <div class="copyright-text">© 2025 Tianjin University GIPC. All Rights Reserved.</div>
                     </div>
                 </div>
@@ -921,6 +928,8 @@
             };
             decisionPath = [];
 
+            // 重置UI，并确保Header显示
+            document.getElementById('main-header').classList.remove('hidden'); 
             updateUI();
             
             document.getElementById('screen-matrix').classList.add('hidden');
@@ -1170,6 +1179,9 @@
         }
 
         async function endGame() {
+            // 隐藏顶部 Header
+            document.getElementById('main-header').classList.add('hidden');
+
             document.getElementById('screen-result').classList.add('hidden');
             document.getElementById('screen-result').classList.remove('flex');
             document.getElementById('screen-end').classList.remove('hidden');
@@ -1190,8 +1202,7 @@
             
             gameState.budget = finalBudget; 
             
-            // 核心修复：强制更新顶部 UI，确保罚款后的利润和红色的工期能同步显示
-            updateUI();
+            // updateUI(); // 顶部已隐藏，不再需要更新它
 
             document.getElementById('end-budget').innerText = finalBudget.toFixed(2);
             document.getElementById('end-schedule').innerText = gameState.schedule.toFixed(2);
