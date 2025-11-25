@@ -36,9 +36,9 @@
         .matrix-table { width: 100%; border-collapse: collapse; font-size: 9px; text-align: center; }
         .matrix-table th, .matrix-table td { border: 1px solid #cbd5e1; padding: 4px 2px; }
         .matrix-table th { background: #e2e8f0; color: #334155; }
-        /* 修改4：高亮样式调整，适配彩色背景 */
+        
         .matrix-highlight { border: 2px solid #2563eb !important; font-weight: bold; background-color: rgba(255,255,255,0.6); }
-        /* 概率行样式调整，支持内部span高亮 */
+        
         .prob-row { font-size: 8px; color: #64748b; background: rgba(255,255,255,0.5); }
         .prob-highlight { color: #dc2626; font-weight: bold; background-color: #fef2f2; padding: 0 2px; border-radius: 2px; border: 1px solid #fee2e2; }
 
@@ -63,14 +63,40 @@
         .radio-label input { display: none; }
 
 
-        /* 九宫格随机样式 */
+        /* 九宫格随机样式 - 修改部分 */
         .grid-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 100%; max-width: 300px; margin: 0 auto; }
-        .grid-cell { aspect-ratio: 1; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; flex-col; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; transition: all 0.1s; opacity: 0.5; }
-        .grid-cell.active { background: #3b82f6; color: white; transform: scale(1.05); opacity: 1; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5); border-color: #2563eb; z-index: 10; }
-        .grid-cell-text { font-size: 10px; font-weight: bold; text-align: center; }
-        .grid-cell-sub { font-size: 8px; opacity: 0.8; }
+        .grid-cell { 
+            aspect-ratio: 1; 
+            /* 基础边框，会被JS动态类覆盖，但active需保留 */
+            border: 1px solid rgba(0,0,0,0.1); 
+            border-radius: 8px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            transition: all 0.1s; 
+            opacity: 0.7; 
+            padding: 2px;
+        }
+        /* 修改：选中状态拥有最高优先级，强制变蓝 */
+        .grid-cell.active { 
+            background-color: #3b82f6 !important; 
+            color: white !important; 
+            border-color: #2563eb !important;
+            transform: scale(1.05); 
+            opacity: 1; 
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5); 
+            z-index: 10; 
+        }
+        /* 修改：统一字体大小，确保三行一致 */
+        .grid-unified-text { 
+            font-size: 9px; 
+            font-weight: bold; 
+            line-height: 1.4; 
+            text-align: center;
+            white-space: nowrap; /* 防止文字折行 */
+        }
 
-        /* 修改3：情境描述卡片布局调整 (并行排列) */
         .ctx-desc-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 8px; }
         .ctx-desc-card { 
             font-size: 9px; 
@@ -78,7 +104,7 @@
             background: #f8fafc; 
             padding: 6px; 
             border-radius: 6px; 
-            border: 1px solid #cbd5e1; /* 加深未选中边框 */
+            border: 1px solid #cbd5e1;
             transition: all 0.3s; 
             opacity: 0.8; 
             display: flex; flex-direction: column;
@@ -86,15 +112,14 @@
         }
         .ctx-label { font-weight: bold; color: #334155; display: block; margin-bottom: 4px; font-size: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 2px;}
         
-        /* 修改3：高亮样式增强 */
         .ctx-desc-card.highlighted {
-            background: #eff6ff; /* 更明显的背景 */
+            background: #eff6ff; 
             border-color: #2563eb;
             border-width: 2px;
             color: #0f172a;
             opacity: 1;
             box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
-            transform: scale(1.02); /* 微微放大 */
+            transform: scale(1.02);
             z-index: 5;
         }
         
@@ -179,10 +204,10 @@
             z-index: 102;
         }
 
-        /* 标题容器：上移 10% */
+        /* 标题容器 */
         .poster-title-container {
             position: absolute;
-            top: 30%; /* 原40%，上移10% */
+            top: 30%; 
             left: 50%; 
             transform: translate(-50%, -50%);
             width: 100%;
@@ -191,14 +216,12 @@
             padding: 0 20px;
         }
         
-        /* 标题 1: SunLink */
-        /* 修改1：加大行距 (line-height) */
         .poster-main-title {
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 56px; 
             font-weight: 900;
             margin-bottom: 0;
-            line-height: 1.4; /* 修改：从 1.1 改为 1.4 */
+            line-height: 1.4;
             letter-spacing: -1px;
             background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 50%, #38bdf8 100%);
             -webkit-background-clip: text;
@@ -206,23 +229,21 @@
             filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.9));
         }
 
-        /* 标题 2: ESG Simulator */
-        /* 修改1：加大行距 (margin-top) */
         .poster-sub-title {
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 26px; 
             font-weight: 600;
             color: #bef264; 
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9); 
-            margin-top: 20px; /* 修改：从 8px 改为 20px */
+            margin-top: 20px; 
             letter-spacing: 3px; 
             text-transform: uppercase;
         }
 
-        /* 底部机构信息 (位置修正：上移至25%，防止被遮挡) */
+        /* 底部机构信息 */
         .poster-footer-info {
             position: absolute; 
-            bottom: 25%; /* 修改：10% -> 25% (上移15%) */
+            bottom: 25%; 
             left: 0; width: 100%;
             text-align: center;
             z-index: 103;
@@ -247,18 +268,15 @@
             font-weight: 500;
         }
 
-        /* 3秒倒计时进度条 - 修正版 */
-        /* 位置：ESG Simulator 和 Tianjin University 中间 */
-        /* title是 top: 30%左右, footer是 bottom: 25%左右 */
-        /* 我们把 Bar 放在 bottom: 35% 左右比较合适 */
+        /* 3秒倒计时进度条 */
         .poster-bar-container {
             position: absolute; 
-            bottom: 35%; /* 调整高度位置 */
+            bottom: 35%; 
             left: 50%; 
             transform: translateX(-50%);
-            width: 60%; /* 稍微加宽一点 */
-            height: 32px; /* 增高，以便容纳文字 */
-            background: rgba(0,0,0,0.6); /* 半透明黑底 */
+            width: 60%; 
+            height: 32px; 
+            background: rgba(0,0,0,0.6); 
             border: 1px solid rgba(255,255,255,0.2);
             border-radius: 16px; 
             overflow: hidden; 
@@ -266,20 +284,18 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
         
-        /* 内部进度条 */
         .poster-bar {
             width: 100%; 
             height: 100%; 
-            background: linear-gradient(90deg, #38bdf8, #2563eb); /* 蓝渐变 */
+            background: linear-gradient(90deg, #38bdf8, #2563eb); 
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
             animation: posterCountdown 3s linear forwards;
         }
         @keyframes posterCountdown { 
-            0% { width: 0%; } /* 从0开始增长，模拟加载/开始 */
+            0% { width: 0%; } 
             100% { width: 100%; } 
         }
         
-        /* 进度条上的文字 */
         .poster-bar-text {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -296,40 +312,30 @@
 </head>
 <body class="flex flex-col text-slate-800 bg-slate-100">
 
-    <!-- 0. 启动海报 (v4.4 Layout & Bar Fix Edition) -->
+    <!-- 0. 启动海报 -->
     <div id="screen-poster">
-        <!-- 背景图 -->
         <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?q=80&w=2070&auto=format&fit=crop" 
              alt="Green Earth Power Grid" 
              id="poster-image-element"
              class="poster-img">
-             
-        <!-- 遮罩层 -->
         <div class="poster-overlay"></div>
-
-        <!-- 中间大标题：已上移 -->
         <div class="poster-title-container">
             <div class="poster-main-title">SunLink</div>
             <div class="poster-sub-title">ESG Simulator</div>
         </div>
-
-        <!-- 3秒倒计时进度条：增加文字，位置居中 -->
         <div class="poster-bar-container">
-             <div class="poster-bar-text">挑战即将开始</div> <!-- 修改：文字变更 -->
+             <div class="poster-bar-text">挑战即将开始</div>
             <div class="poster-bar"></div>
         </div>
-
-        <!-- 底部机构文字 -->
         <div class="poster-footer-info">
             <span class="poster-org-name">Tianjin University</span>
             <span class="poster-center-name">Global Infrastructure Projects Center</span>
         </div>
     </div>
 
-    <!-- 顶部导航栏 (ID="main-header") -->
+    <!-- 顶部导航栏 -->
     <header id="main-header" class="bg-white shadow-sm border-b border-slate-200 z-50 px-3 py-2 w-full absolute top-0 left-0 hidden">
         <div class="flex justify-between items-center mb-2 pt-safe-top mt-2"> 
-            <!-- 文字 Logo 样式 -->
             <div class="flex items-center gap-2">
                 <div class="text-xl">🌍</div>
                 <div class="font-black text-lg tracking-tight text-slate-800">SunLink <span class="text-blue-600">ESG</span></div>
@@ -337,7 +343,6 @@
             <div class="text-xs text-slate-400 font-bold" id="level-indicator">Mission Briefing</div>
         </div>
         
-        <!-- 核心数值仪表盘 -->
         <div class="grid grid-cols-3 gap-2 text-xs font-bold pb-1">
             <div class="flex flex-col items-center bg-slate-50 p-1 rounded border border-slate-200 relative overflow-visible">
                 <span class="text-[10px] text-slate-400 scale-90">利润(万)</span>
@@ -362,7 +367,6 @@
         <div class="w-full h-1 bg-slate-200 mt-2 rounded-full overflow-hidden">
             <div id="progress-bar" class="bg-blue-500 h-1 transition-all duration-500" style="width: 0%"></div>
         </div>
-        <!-- 离线提示 -->
         <div id="network-status" class="w-full bg-orange-100 text-orange-700 text-[10px] text-center py-1 mt-1 rounded">
             当前为离线模式 (数据无法同步)
         </div>
@@ -372,7 +376,7 @@
     <main class="flex-1 relative w-full h-full max-w-lg mx-auto bg-white md:my-4 md:rounded-2xl md:shadow-xl md:border md:border-slate-200 overflow-hidden flex flex-col z-0">
         
         <!-- 1. 开场 (首页) -->
-        <div id="screen-start" class="absolute inset-0 z-20 flex flex-col bg-white fade-in overflow-y-auto hidden"> <!-- 注意：默认先hidden，等海报结束后显示 -->
+        <div id="screen-start" class="absolute inset-0 z-20 flex flex-col bg-white fade-in overflow-y-auto hidden">
             <div class="flex-1 p-6 flex flex-col items-center justify-center text-center pb-40">
                 <div class="bounce-earth mb-4">🌍</div>
                 
@@ -383,11 +387,9 @@
                     每一个决定都将影响项目的最终命运
                 </p>
                 <div class="mt-4 pt-6 border-t border-slate-100 w-full">
-                    <!-- 修改：增大行距 -->
                     <p class="text-xs text-slate-400 font-medium mb-2">开发单位</p>
                     <p class="text-xs text-slate-600 font-bold mb-4">天津大学全球工程经营实验室</p>
                     
-                    <!-- 修改：增大行距 -->
                     <p class="text-xs text-slate-400 font-medium mb-2">联系人</p>
                     <p class="text-xs text-slate-600 font-bold mb-2">傅老师 yongcheng_fu@126.com</p>
                     
@@ -401,7 +403,7 @@
             </div>
         </div>
 
-        <!-- 1.5 调查问卷 (重构) -->
+        <!-- 1.5 调查问卷 -->
         <div id="screen-survey" class="hidden flex-col h-full fade-in absolute inset-0 z-20 bg-white">
             <div class="pt-4 pb-2 px-6 flex justify-center items-center border-b border-slate-100 bg-white z-10">
                  <div class="text-2xl mr-2">🌍</div>
@@ -409,7 +411,6 @@
             </div>
 
             <div class="px-6 pt-4 flex-1 overflow-y-auto pb-40 scroll-smooth" id="survey-container">
-                
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-6 text-xs text-slate-600 leading-relaxed shadow-sm">
                     <h4 class="font-bold text-blue-800 mb-2 text-sm">🔬 实验研究知情同意书</h4>
                     <p class="mb-2">您即将参与的是一项关于国际工程 ESG 决策行为的学术研究实验，由天津大学全球工程经营实验室开发。</p>
@@ -539,7 +540,6 @@
                     <!-- 2. ESG 认同 -->
                     <div class="mb-6">
                         <p class="text-xs font-bold text-blue-600 mb-2 uppercase">第二部分：ESG 认同</p>
-                        
                         <div class="mb-4" id="q-esg1">
                             <p class="text-sm font-medium mb-2">7. 我认为 ESG 主要是为了公关形象，对项目实质价值有限。</p>
                             <div class="likert-scale" data-name="esg1"></div> 
@@ -570,22 +570,16 @@
                             <div class="likert-scale" data-name="risk3"></div>
                         </div>
                     </div>
-                    
                     <div class="h-8"></div>
                 </form>
             </div>
-            <!-- 底部并排按钮 -->
             <div class="nav-footer">
-                <button class="btn-secondary" onclick="backToStart()">
-                    ⬅️ 返回
-                </button>
-                <button class="btn-primary" onclick="validateAndSubmit()" id="btn-survey">
-                    提交并继续 ➡️
-                </button>
+                <button class="btn-secondary" onclick="backToStart()">⬅️ 返回</button>
+                <button class="btn-primary" onclick="validateAndSubmit()" id="btn-survey">提交并继续 ➡️</button>
             </div>
         </div>
 
-        <!-- 2. 简报 (内容微调) -->
+        <!-- 2. 简报 -->
         <div id="screen-briefing" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
             <div class="flex-1 overflow-y-auto scroll-smooth pb-32">
                 <div class="header-spacer"></div>
@@ -593,7 +587,6 @@
                     <h2 class="text-xl font-black text-slate-800 mb-4 border-l-4 border-blue-500 pl-3">项目概况 Briefing</h2>
                     
                     <div class="w-full h-40 mb-4 rounded-lg overflow-hidden shadow-sm border border-slate-200 relative bg-slate-100">
-                        <!-- 修改：替换为更稳定的 Unsplash 图片 -->
                         <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2072&auto=format&fit=crop" alt="Large Scale Solar Power Plant" class="w-full h-full object-cover">
                         <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-900/60 to-transparent p-2">
                             <p class="text-white text-xs font-bold">100MW 光伏 + 132kV 输电线路</p>
@@ -605,7 +598,6 @@
                             <div class="text-[10px] text-emerald-600 mb-0.5">初始利润</div>
                             <div class="text-sm font-bold text-emerald-800">1000万</div>
                         </div>
-                        <!-- 修改处：预计工期 -> 当前进度/合同工期 -->
                         <div class="bg-blue-50 border border-blue-100 p-2 rounded col-span-1">
                             <div class="text-[10px] text-blue-600 mb-0.5">当前进度/合同工期</div>
                             <div class="text-sm font-bold text-blue-800">12个月 / 16个月</div>
@@ -642,7 +634,6 @@
                             <ul class="list-disc pl-4 space-y-1 text-xs leading-relaxed">
                                 <li><strong>世界银行（World Bank）</strong>通过 IBRD/IDA 贷款和担保等方式主导融资；</li>
                                 <li>项目适用世界银行<strong>《环境与社会框架》（ESF）</strong>及 10 项环境与社会标准（ESS）。</li>
-                                <!-- 修改3：删除“导致强制退场” -->
                                 <li class="text-red-600 font-bold bg-red-50 p-1 rounded mt-1">声誉红线：声誉分数低于 50 分将触发世行制裁。</li>
                             </ul>
                         </div>
@@ -663,14 +654,16 @@
             </div>
         </div>
 
-        <!-- 2.5 随机情境 (保持 v26) -->
+        <!-- 2.5 随机情境 -->
         <div id="screen-context" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
             <div class="header-spacer"></div>
             <div class="px-6 pt-4 flex-1 overflow-y-auto pb-24">
                 <div class="flex flex-col items-center text-center">
                     <h2 class="text-xl font-bold text-slate-800 mb-2">正在随机生成实验环境...</h2>
                     <p class="text-sm text-slate-500 mb-4">系统将在 3×3 矩阵中为您分配<br>企业资源与项目环境</p>
+                    <!-- 九宫格容器 -->
                     <div class="grid-box mb-6" id="random-grid"></div>
+                    
                     <div id="ctx-result-area" class="hidden flex-col items-center fade-in w-full">
                         <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl w-full shadow-sm mb-4">
                             <div class="text-2xl mb-1">🎲</div>
@@ -687,7 +680,6 @@
 
                     <div class="w-full text-left border-t border-slate-100 pt-2">
                         <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">企业资源 (Resource) 说明</h3>
-                        <!-- 修改3：三列布局 -->
                         <div class="ctx-desc-container">
                             <div class="ctx-desc-card" id="desc-res-low">
                                 <span class="ctx-label text-slate-600">低资源 (Low)</span>
@@ -704,7 +696,6 @@
                         </div>
 
                         <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 mt-4">敏感度 (Sensitivity) 说明</h3>
-                         <!-- 修改3：三列布局 -->
                         <div class="ctx-desc-container">
                              <div class="ctx-desc-card" id="desc-sen-low">
                                 <span class="ctx-label text-green-600">低敏感度 (Low)</span>
@@ -728,7 +719,7 @@
             </div>
         </div>
 
-        <!-- 2.6 策略矩阵 (保持 v26) -->
+        <!-- 2.6 策略矩阵 -->
         <div id="screen-matrix" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
             <div class="header-spacer"></div>
             <div class="px-4 pt-2 flex-1 overflow-y-auto pb-32">
@@ -751,7 +742,6 @@
             <div class="header-spacer"></div>
             <div class="flex-1 overflow-y-auto scroll-smooth pb-32 px-4 pt-2">
                 
-                <!-- 动态实验组警示条 -->
                 <div id="dynamic-warning" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-3 rounded mb-4 text-xs flex items-center gap-2 shadow-md animate-pulse">
                     <span class="text-2xl">⚠️</span>
                     <div>
@@ -764,7 +754,6 @@
                 <h3 id="event-title" class="text-2xl font-black text-slate-900 mb-4 leading-snug mt-1">Title</h3>
                 <div class="text-sm text-slate-700 leading-relaxed space-y-2 pb-4 mb-4 border-l-4 border-yellow-400 pl-3 bg-yellow-50 p-3 rounded-r border-y border-r border-yellow-100">
                      <div id="event-desc"></div>
-                     <!-- 情境化时间压力插入点 (仅在逻辑中触发，UI上不显示红色警告文字了) -->
                      <div id="contextual-time-pressure" class="hidden mt-2 pt-2 border-t border-yellow-200 text-red-600 font-bold animate-pulse">
                      </div>
                 </div>
@@ -813,7 +802,7 @@
             </div>
         </div>
 
-        <!-- 6. 完工报告 (保持 v26) -->
+        <!-- 6. 完工报告 -->
         <div id="screen-end" class="hidden absolute inset-0 z-20 flex flex-col items-center bg-white fade-in">
              <div class="pt-4 pb-2 px-6 flex justify-center items-center border-b border-slate-100 bg-white z-10 flex-none w-full">
                  <div class="text-2xl mr-2">🌍</div>
@@ -839,7 +828,7 @@
                         </div>
                     </div>
 
-                    <!-- 对比表 (先显示) -->
+                    <!-- 对比表 -->
                     <div class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6">
                         <p class="text-sm font-bold text-slate-800 mb-2 border-l-4 border-indigo-500 pl-2">📊 决策路径对比分析</p>
                         <div id="loading-stats" class="text-xs text-blue-500 animate-pulse mb-2 hidden">正在同步云端学员数据...</div>
@@ -879,7 +868,7 @@
                                     <td id="bench-luck-rep">100.00</td>
                                 </tr>
                                 <tr class="bg-red-100 text-red-800 font-medium">
-                                    <td title="低资源企业，所有选A且暴露">最糟糕情况</td> <!-- 修改1：最狼狈 -> 最糟糕 -->
+                                    <td title="低资源企业，所有选A且暴露">最糟糕情况</td> 
                                     <td id="bench-worst-budget">40.00</td>
                                     <td id="bench-worst-schedule">21.60</td>
                                     <td id="bench-worst-rep">-20.00</td>
@@ -891,24 +880,19 @@
                         </div>
                     </div>
 
-                    <!-- 点评 (后显示) -->
                     <div id="end-feedback" class="text-sm bg-white border border-slate-200 p-4 rounded-xl shadow-sm w-full mb-6 text-slate-700 leading-relaxed"></div>
 
-                    <!-- 思考题 (v26) -->
                     <div class="w-full bg-blue-50/50 p-4 rounded-xl border border-blue-100 mb-6">
                         <p class="text-sm font-bold text-blue-800 mb-2">🤔 思考与讨论</p>
                         <p class="text-sm text-slate-600 leading-relaxed">
-                            <!-- 修改1：文本修正 -->
                             对于国际工程 ESG 管理，经历了这个项目的种种挑战后，通过上面的对比，您有何感想？欢迎与同事或天津大学全球工程经营实验室交流。
                         </p>
                     </div>
 
                     <div class="mt-4 w-full text-center">
-                        <!-- 修改：增大行距 -->
                         <p class="text-xs text-slate-400 font-medium mb-2">开发单位</p>
                         <p class="text-xs text-slate-600 font-bold mb-4">天津大学全球工程经营实验室</p>
                         
-                        <!-- 修改：增大行距 -->
                         <p class="text-xs text-slate-400 font-medium mb-2">联系人</p>
                         <p class="text-xs text-slate-600 font-bold mb-2">傅老师 yongcheng_fu@126.com</p>
                         <div class="copyright-text">© 2025 Tianjin University GIPC. All Rights Reserved.</div>
@@ -935,13 +919,10 @@
         };
         let hasContextGenerated = false;
         
-        // 新增：用于记录关卡开始时间
         let levelStartTime = 0;
-
-        // 实验组分配：Static (0) vs Dynamic (1)
         let experimentGroup = Math.random() < 0.5 ? 'static' : 'dynamic'; 
-        let dynamicMultiplier = 1.0; // 累乘系数
-        let dynamicProbAdder = 0.0;  // 概率加成
+        let dynamicMultiplier = 1.0; 
+        let dynamicProbAdder = 0.0;  
 
         // --- 核心状态变量 ---
         let gameState = { 
@@ -952,74 +933,64 @@
         };
         
         let userProfile = {
-            // 基础分数
             esgScore: 0,
             riskScore: 0,
             moralScore: 0, 
             timeScore: 0,
-            
-            // 人口统计
             gender: "",
             age: "",
             major: "",
             role_pm: "",
             role_hse: "",
             exp_neg: "",
-            
             surveyData: {}
         };
         
         let currentSessionId = null;
         let decisionPath = []; 
 
-        // --- 页面初始化逻辑 (重写版 v33.9.47 - 3秒同步) ---
+        // --- 页面初始化逻辑 ---
         (function() {
-            const MIN_DISPLAY_TIME = 3000; // 严格同步CSS动画时间
-            const MAX_WAIT_TIME = 5500;    // 兜底
+            const MIN_DISPLAY_TIME = 3000; 
+            const MAX_WAIT_TIME = 5500;    
             
             const startTime = Date.now();
             let hasEntered = false;
 
-            // 核心进入函数
             function enterApp() {
                 if (hasEntered) return;
                 
                 const now = Date.now();
                 const elapsed = now - startTime;
-                // 计算还需要等多久才能满足 MIN_DISPLAY_TIME
                 const remaining = Math.max(0, MIN_DISPLAY_TIME - elapsed);
 
-                // 只有当剩余等待时间 > 0 时才 setTimeout，否则直接执行
                 setTimeout(() => {
-                    if (hasEntered) return; // 双重检查
+                    if (hasEntered) return; 
                     hasEntered = true;
 
                     const poster = document.getElementById('screen-poster');
                     const startScreen = document.getElementById('screen-start');
                     
-                    if (poster) poster.style.opacity = 0; // 淡出动画
+                    if (poster) poster.style.opacity = 0; 
                     if (startScreen) startScreen.classList.remove('hidden');
                     
                     setTimeout(() => {
                         if (poster) poster.style.display = 'none';
-                    }, 800); // 等待CSS transition结束
+                    }, 800); 
                 }, remaining);
             }
 
-            // 监听图片加载
             const img = document.getElementById('poster-image-element');
             if (img) {
                 if (img.complete) {
                     enterApp();
                 } else {
                     img.onload = enterApp;
-                    img.onerror = enterApp; // 失败也进
+                    img.onerror = enterApp; 
                 }
             } else {
                 enterApp();
             }
-
-            // 兜底：无论图片是否加载成功，MAX_WAIT_TIME 后强制进入
             setTimeout(enterApp, MAX_WAIT_TIME);
         })();
 
@@ -1079,7 +1050,6 @@
             },
             {
                 id: 2, tag: "ESS2 劳工条件", title: "危机事件2：沉默的工人",
-                // 修改1：文本优化，“且为了方便“统一调度”” -> “为了统一调度”
                 desc: "<strong>【事件描述】</strong><br>分包商为抢雨季前的工期实行“大干100天”，工人每日工作10小时以上，且没有周末休息。为了统一调度，分包商安排所有工人挤在现场周边的临时板房里，卫生条件恶劣，垃圾堆积，异味刺鼻。",
                 options: [
                     { type: "A", text: "这是当地常态。只要按时发工资，工人为了赚钱是愿意吃苦的。让工头稍微注意一下垃圾清理，不要影响现场观感即可。", riskRole: "疫情爆发", riskMsg: "恶劣的卫生条件导致传染病在营地爆发，大批工人病倒。世行介入调查发现工时和居住环境严重违规。", luckyMsg: "虽然环境差了点，但大家为了加班费都忍了下来，工程进度保住了。", learning: "忽视基本的生活和工作条件（ESS2）不仅不人道，更是巨大的运营风险。" },
@@ -1089,7 +1059,6 @@
             },
             {
                 id: 3, tag: "ESS8 文化遗产", title: "危机事件3：神树拦路",
-                // 修改5：去掉祖先栖息的神树周围多余的星号
                 desc: "<strong>【事件描述】</strong><br>光伏场区平整土地时，推土机被村民拦下。场区中心有一棵看似普通的巨大的猴面包树。设计图纸上显示必须铲除，否则会遮挡两排组件，影响发电量。但村民坚称这是“祖先栖息的神树”，绝对不能动。",
                 options: [
                     { type: "A", text: "没有什么是钱解决不了的。找村长私下谈，给村集体一笔‘祭祀费’，让我们明天把它砍了。", riskRole: "反腐机构", riskMsg: "村长私吞钱财引发暴动。这笔钱被定性为商业贿赂。", luckyMsg: "村长搞定了村民。树没了，耳根清净了。", learning: "不要试图用金钱买断文化信仰，这涉及严重的道德风险。" },
@@ -1168,7 +1137,7 @@
             document.getElementById('screen-survey').classList.remove('hidden');
             document.getElementById('screen-survey').classList.add('flex');
             renderLikertScales();
-            updateUI(); // 初始化顶部状态栏
+            updateUI(); 
         }
 
         function renderLikertScales() {
@@ -1199,10 +1168,9 @@
             const parent = el.parentElement;
             Array.from(parent.children).forEach(child => child.classList.remove('selected'));
             el.classList.add('selected');
-            parent.classList.remove('scroll-highlight'); // 移除高亮
+            parent.classList.remove('scroll-highlight'); 
         }
 
-        // 单选框辅助函数
         function selectRadio(el, field, val) {
             const group = el.parentElement;
             const inputs = document.querySelectorAll(`input[name="${field}"]`);
@@ -1211,10 +1179,9 @@
             });
             el.classList.add('checked');
             userProfile[field] = val;
-            el.closest('.form-group').classList.remove('scroll-highlight'); // 移除高亮
+            el.closest('.form-group').classList.remove('scroll-highlight'); 
         }
 
-        // 监听 Select 变化移除高亮
         document.addEventListener('change', function(e) {
             if (e.target.classList.contains('form-select')) {
                 userProfile[e.target.dataset.field] = e.target.value;
@@ -1225,10 +1192,8 @@
         });
 
         function validateAndSubmit() {
-            // 收集当前数据
             const d = userProfile.surveyData;
             
-            // 定义所有需要检查的字段ID
             const checks = [
                 { id: 'q-gender', val: userProfile.gender },
                 { id: 'q-age', val: userProfile.age },
@@ -1251,8 +1216,6 @@
             ];
 
             let firstErrorId = null;
-
-            // 清除旧的高亮
             document.querySelectorAll('.scroll-highlight').forEach(el => el.classList.remove('scroll-highlight'));
 
             checks.forEach(item => {
@@ -1266,10 +1229,8 @@
             });
 
             if (firstErrorId) {
-                // 滚动到第一个错误
                 const errorEl = document.getElementById(firstErrorId);
                 errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                // 可以加个震动或者提示
                 return;
             }
 
@@ -1279,8 +1240,6 @@
         function submitSurvey(e) {
             if(e) e.preventDefault();
             const d = userProfile.surveyData;
-            
-            // 计算各维度分数
             userProfile.esgScore = ((6 - d.esg1) + (6 - d.esg2) + d.esg3) / 3; 
             userProfile.riskScore = (d.risk1 + d.risk2 + (6 - d.risk3)) / 3;
             userProfile.moralScore = (d.moral1 + d.moral2 + d.moral3) / 3;
@@ -1311,6 +1270,28 @@
         }
 
         // --- 九宫格动画 & 逻辑 ---
+        
+        // 辅助函数: 获取风险等级背景色
+        // 逻辑: (2 - resIdx) + senIdx = 0 (best) to 4 (worst)
+        function getRiskBgClass(r, s) {
+             const resMap = { 'low': 0, 'mid': 1, 'high': 2 };
+             const senMap = { 'low': 0, 'mid': 1, 'high': 2 };
+             const rIdx = resMap[r];
+             const sIdx = senMap[s];
+             const riskScore = (2 - rIdx) + sIdx; 
+             
+             // 4级: 最红 (低资高敏)
+             if (riskScore === 4) return 'bg-red-200 text-red-900 border-red-300';
+             // 3级: 橙色
+             if (riskScore === 3) return 'bg-orange-100 text-orange-900 border-orange-200';
+             // 2级: 黄色
+             if (riskScore === 2) return 'bg-yellow-50 text-yellow-900 border-yellow-200';
+             // 1级: 浅绿
+             if (riskScore === 1) return 'bg-lime-50 text-lime-900 border-lime-200';
+             // 0级: 最绿 (高资低敏)
+             return 'bg-emerald-100 text-emerald-900 border-emerald-200';
+        }
+
         function runContextAnimation() {
             document.getElementById('btn-start-matrix').classList.add('hidden');
             document.getElementById('btn-start-matrix').classList.remove('flex');
@@ -1319,20 +1300,26 @@
             const resList = ['low', 'mid', 'high'];
             const senList = ['low', 'mid', 'high'];
             
-            // 生成所有可能的组合
             const combinations = [];
             resList.forEach(r => { senList.forEach(s => { combinations.push({ r, s }); }); });
             
             // 渲染9个格子
             combinations.forEach((c, idx) => {
                 const el = document.createElement('div');
-                el.className = `grid-cell grid-cell-${idx}`;
-                el.innerHTML = `<div class="grid-cell-text">${getResDescShort(c.r)}</div><div class="grid-cell-sub">+${getSenDescShort(c.s)}</div>`;
+                // 添加动态背景色
+                const bgClass = getRiskBgClass(c.r, c.s);
+                el.className = `grid-cell grid-cell-${idx} ${bgClass}`;
+                
+                // 修改：三行布局，统一字体大小
+                el.innerHTML = `
+                    <div class="grid-unified-text">${getResDescShort(c.r)}</div>
+                    <div class="grid-unified-text my-0.5">+</div>
+                    <div class="grid-unified-text">${getSenDescShort(c.s)}</div>
+                `;
                 grid.appendChild(el);
             });
 
-            // 修改1：确保完全随机，直接从 0-8 中选一个索引
-            const targetIndex = Math.floor(Math.random() * combinations.length); // 0-8
+            const targetIndex = Math.floor(Math.random() * combinations.length); 
             const target = combinations[targetIndex];
             globalContext.resource = target.r;
             globalContext.sensitivity = target.s;
@@ -1364,9 +1351,18 @@
             const targetIndex = combinations.findIndex(c => c.r === globalContext.resource && c.s === globalContext.sensitivity);
             combinations.forEach((c, idx) => {
                 const el = document.createElement('div');
-                el.className = `grid-cell ${idx === targetIndex ? 'active' : ''}`;
+                const bgClass = getRiskBgClass(c.r, c.s);
+                // 保持 active 状态
+                el.className = `grid-cell ${idx === targetIndex ? 'active' : ''} ${bgClass}`;
+                
                 if (idx === targetIndex) el.style.opacity = 1;
-                el.innerHTML = `<div class="grid-cell-text">${getResDescShort(c.r)}</div><div class="grid-cell-sub">+${getSenDescShort(c.s)}</div>`;
+                
+                // 修改：三行布局，统一字体大小
+                el.innerHTML = `
+                    <div class="grid-unified-text">${getResDescShort(c.r)}</div>
+                    <div class="grid-unified-text my-0.5">+</div>
+                    <div class="grid-unified-text">${getSenDescShort(c.s)}</div>
+                `;
                 grid.appendChild(el);
             });
             showContextResult();
@@ -1431,8 +1427,6 @@
                     </thead>
                     <tbody>
             `;
-
-            // 修改4：调整渲染顺序 A -> B -> C，并添加背景色
 
             // A 部分 (bg-red-50)
             html += `
@@ -1528,8 +1522,8 @@
         function startGame() {
             gameState = { budget: 1000, schedule: 12.0, reputation: 100, currentLevel: 0 };
             decisionPath = [];
-            dynamicMultiplier = 1.0; // 重置系数
-            dynamicProbAdder = 0.0; // 重置概率
+            dynamicMultiplier = 1.0; 
+            dynamicProbAdder = 0.0; 
             updateUI();
             document.getElementById('screen-matrix').classList.add('hidden');
             document.getElementById('screen-matrix').classList.remove('flex');
@@ -1554,10 +1548,8 @@
             document.getElementById('screen-game').classList.add('flex');
             document.querySelector('#screen-game .overflow-y-auto').scrollTop = 0;
 
-            // 更新顶部状态栏
             updateUI(); 
 
-            // 动态组警告逻辑 (累进式)
             const warningEl = document.getElementById('dynamic-warning');
             const warningMsg = document.getElementById('dynamic-msg-content');
             if (experimentGroup === 'dynamic' && dynamicMultiplier > 1.0) {
@@ -1584,28 +1576,23 @@
             document.getElementById('event-title').innerText = data.title;
             document.getElementById('event-desc').innerHTML = data.desc;
 
-            // 情境化时间压力 (仅逻辑，不显示警告)
             const timePressureEl = document.getElementById('contextual-time-pressure');
             timePressureEl.classList.add('hidden');
-            timePressureEl.innerHTML = ''; // 清空内容
+            timePressureEl.innerHTML = ''; 
             
             if (index >= 3) {
-                // 仅保留逻辑检查点，如果未来需要恢复功能
                 if (gameState.schedule > 14.5) {
-                   // hidden 保持
                 }
             }
 
             const container = document.getElementById('options-container');
             container.innerHTML = ''; 
             
-            // 强耦合 UI 样式准备
             let budgetStyle = "";
             let repStyle = "";
             if (userProfile.timeScore <= 2) budgetStyle = "highlight-short-term"; 
             if (userProfile.timeScore >= 4) repStyle = "highlight-long-term";
 
-            // 预先计算所有选项的当前数据，以便记录和显示
             const currentOptionsData = {};
             ['A', 'B', 'C'].forEach(type => {
                 currentOptionsData[type] = calculateOptionImpact(type);
@@ -1615,7 +1602,6 @@
                 const calc = currentOptionsData[opt.type];
                 const btn = document.createElement('button');
                 
-                // 修改4：为不同选项设置背景颜色 (A: Red-50, B: Yellow-50, C: Green-50)
                 let bgClass = "";
                 let borderClass = "";
                 if (opt.type === 'A') { bgClass = "bg-red-50"; borderClass = "border-red-200"; }
@@ -1625,7 +1611,6 @@
 
                 btn.className = `relative w-full text-left ${bgClass} border ${borderClass} rounded-xl p-3 shadow-sm active:scale-[0.98] transition-all duration-100 hover:shadow-md`;
                 
-                // 修改3：传递完整的 currentOptionsData 给 handleDecision
                 btn.onclick = () => handleDecision(opt, calc, currentOptionsData);
 
                 let riskLabel = "";
@@ -1659,7 +1644,6 @@
                 container.appendChild(btn);
             });
 
-            // 新增：重置计时器
             levelStartTime = Date.now();
         }
 
@@ -1667,7 +1651,6 @@
             const r = globalContext.resource;
             const s = globalContext.sensitivity;
             
-            // 动态实验组：使用全局累乘系数
             let probMod = 0;
             let costFactor = 1.0;
 
@@ -1681,9 +1664,8 @@
             } else {
                 const logic = STRATEGY_LOGIC[type];
                 let baseProb = logic.prob[s];
-                let finalProb = Math.min(baseProb + probMod, 1.0); // 封顶100%
+                let finalProb = Math.min(baseProb + probMod, 1.0); 
                 
-                // 只有失败（暴露）的代价会增加
                 const failRaw = logic.fail[r];
                 const failAdjusted = {
                     b: failRaw.b * costFactor,
@@ -1700,22 +1682,18 @@
         }
 
         function handleDecision(opt, calc, allOptionsCalc) {
-            // 新增：计算决策耗时 (秒)
             const duration = (Date.now() - levelStartTime) / 1000;
 
-            // 修改3：记录决策时的当前状态 + 所有选项的具体参数 + 耗时
             decisionPath.push({ 
                 level: gameState.currentLevel, 
                 type: opt.type, 
                 exposed: false,
-                duration: duration, // <--- 新增字段
-                // 快照当前状态 (决策前)
+                duration: duration, 
                 snapshot: {
                     budget: gameState.budget,
                     schedule: gameState.schedule,
                     reputation: gameState.reputation
                 },
-                // 快照所有选项的参数 (用于分析动态惩罚的影响)
                 optionsSnapshot: allOptionsCalc
             });
             
@@ -1750,10 +1728,9 @@
             decisionPath[decisionPath.length - 1].exposed = isCaught;
 
             if (isCaught) {
-                // 累进式惩罚逻辑：每次暴露，系数 * 1.1
                 if (experimentGroup === 'dynamic') {
                     dynamicMultiplier *= 1.1;
-                    dynamicProbAdder += 0.1; // 概率每次+10%
+                    dynamicProbAdder += 0.1; 
                 }
                 applyResult({
                     budget: calc.fail.b,
@@ -1853,7 +1830,6 @@
         function updateUI() {
             document.getElementById('val-budget').innerText = gameState.budget.toFixed(2);
             
-            // 逻辑修改：状态栏显示剩余或延误
             const lbl = document.getElementById('lbl-schedule');
             const valEl = document.getElementById('val-schedule');
             const box = document.getElementById('box-schedule');
@@ -1862,23 +1838,20 @@
                 const remaining = LIMIT_SCHEDULE - gameState.schedule;
                 lbl.innerText = "进度(剩余)";
                 valEl.innerText = remaining.toFixed(1); 
-                valEl.className = "text-blue-600 text-base"; // 默认蓝色
+                valEl.className = "text-blue-600 text-base"; 
                 
-                // 剩余工期 < 2个月，整个框闪烁
                 if (remaining < 2.0) {
-                    valEl.className = "text-red-600 text-base font-bold"; // 文字变红
-                    box.classList.add('animate-box-flash'); // 增加闪烁动画类
+                    valEl.className = "text-red-600 text-base font-bold"; 
+                    box.classList.add('animate-box-flash'); 
                 } else {
                     box.classList.remove('animate-box-flash');
                 }
 
             } else {
-                // 延误情况
                 const overdue = gameState.schedule - LIMIT_SCHEDULE;
                 lbl.innerText = "进度(延误)";
                 valEl.innerText = "-" + overdue.toFixed(1);
                 valEl.className = "text-red-600 text-base font-bold";
-                // 逻辑修改：延误时也要闪烁
                 box.classList.add('animate-box-flash'); 
             }
             
@@ -1901,7 +1874,6 @@
 
             let finalBudget = gameState.budget; 
             let schedulePenalty = 0;
-            // 逻辑修改：记录是否发生延误
             const isDelayed = gameState.schedule > LIMIT_SCHEDULE;
 
             if (isDelayed) {
@@ -1912,7 +1884,6 @@
             }
             gameState.budget = finalBudget; 
             
-            // 更新 UI
             document.getElementById('end-budget').innerText = finalBudget.toFixed(2);
             document.getElementById('end-schedule').innerText = gameState.schedule.toFixed(2);
             document.getElementById('end-rep').innerText = gameState.reputation.toFixed(2);
@@ -1920,14 +1891,9 @@
             document.getElementById('comp-user-schedule').innerText = gameState.schedule.toFixed(2);
             document.getElementById('comp-user-rep').innerText = gameState.reputation.toFixed(2);
 
-            // --- 1. 智能点评逻辑优化 (v33.9.55 - 科学对比版) ---
-            
-            // 默认备用中性值 (Fallback / Theoretical Neutral)
-            // 用于当云端无法连接或云端没有数据时
             let industryAvg = { budget: 600.0, schedule: 16.0, rep: 60.0 };
             let avgCount = 0;
 
-            // 尝试同步获取云端平均数据
             try {
                 const response = await fetch(LC_API_URL + '?limit=200&order=-createdAt', {
                     method: 'GET',
@@ -1953,21 +1919,14 @@
                 console.warn("点评数据预加载失败，使用理论中性值", e);
             }
 
-            // 定义基准线
-            const bestCompliance = { budget: 600, schedule: 16.0, rep: 160.0 }; // 最佳合规
-            const repThreshold = 50; // 制裁线
+            const bestCompliance = { budget: 600, schedule: 16.0, rep: 160.0 }; 
+            const repThreshold = 50; 
 
             let feedbackHTML = "";
             let analysisText = "";
 
-            // 计算差距
-            const diffAvgBudget = finalBudget - industryAvg.budget;
-            const diffAvgRep = gameState.reputation - industryAvg.rep;
-            const diffCompRep = gameState.reputation - bestCompliance.rep;
-
-            // --- A. 策略风格分析 ---
-            const riskCount = decisionPath.filter(d => d.type === 'A').length; // 激进次数
-            const safeCount = decisionPath.filter(d => d.type === 'C').length; // 保守次数
+            const riskCount = decisionPath.filter(d => d.type === 'A').length; 
+            const safeCount = decisionPath.filter(d => d.type === 'C').length; 
             
             let styleDesc = "";
             if (riskCount >= 3) {
@@ -1978,9 +1937,6 @@
                 styleDesc = "您采取了<b>灵活务实</b>的混合策略，在不同情境下权衡了利弊。";
             }
 
-            // --- B. 结果对比评价 ---
-            
-            // 1. 利润评价
             let budgetEval = "";
             if (finalBudget > industryAvg.budget + 100) {
                 budgetEval = `经济效益<span class="text-emerald-600 font-bold">显著优于行业平均</span>`;
@@ -1990,7 +1946,6 @@
                 budgetEval = `经济效益与行业平均<span class="text-blue-600 font-bold">持平</span>`;
             }
 
-            // 2. 声誉评价 (双重对比)
             let repEval = "";
             if (gameState.reputation >= bestCompliance.rep - 10) {
                 repEval = `声誉表现达到了<span class="text-indigo-600 font-bold">最佳合规标杆</span>水准`;
@@ -2002,17 +1957,13 @@
                 repEval = `声誉表现处于<span class="text-slate-600 font-bold">行业主流区间</span>`;
             }
 
-            // 组合分析文本
             analysisText = `在本次挑战中，${styleDesc}最终结果显示，您的${budgetEval}，同时${repEval}。`;
             
-            // 如果是首位用户或离线
             if (avgCount === 0) {
                 analysisText += `<br><span class="text-gray-400 italic text-xs">(注：当前暂无足够云端数据，对比基于理论中性值)</span>`;
             }
 
-            // --- C. 生成最终 HTML ---
             if (gameState.reputation < repThreshold) {
-                // Case 1: 失败 (制裁)
                 feedbackHTML = `
                     <strong class="text-red-600 block mb-2">⚠️ 项目触发制裁机制 (强制退场)</strong>
                     <div class="bg-slate-100 p-2 rounded text-xs text-slate-700">
@@ -2024,7 +1975,6 @@
                 let overallTitle = "";
                 let overallColor = "";
                 
-                // 判定总体评价 Title
                 if (finalBudget > industryAvg.budget && gameState.reputation > industryAvg.rep) {
                     overallTitle = "🏆 卓越的项目管理"; 
                     overallColor = "text-emerald-600";
@@ -2053,15 +2003,12 @@
             updateBenchmarks();
             document.getElementById('loading-stats').classList.remove('hidden');
             
-            // 数据存储结构更新
             const d = userProfile.surveyData;
             const saveData = {
-                // --- 1. 基本结果 (Basic Results) ---
                 budget: finalBudget,
                 schedule: gameState.schedule,
                 reputation: gameState.reputation,
                 
-                // --- 2. 人口统计 (Demographics) ---
                 demo_gender: userProfile.gender,
                 demo_age: userProfile.age,
                 demo_major: userProfile.major,
@@ -2069,76 +2016,65 @@
                 demo_role_hse: userProfile.role_hse,
                 demo_exp_neg: userProfile.exp_neg,
 
-                // --- 3. 实验设定 (Experiment Settings) ---
                 ctx_resource: globalContext.resource,
                 ctx_sensitivity: globalContext.sensitivity,
                 exp_group: experimentGroup, 
                 final_multiplier: dynamicMultiplier,
 
-                // --- 4. 问卷分数 (Survey Scores) ---
                 esgScore: userProfile.esgScore,
                 riskScore: userProfile.riskScore,
                 moralScore: userProfile.moralScore,
                 timeScore: userProfile.timeScore,
                 
-                // --- 5. 问卷原始数据 (Survey Raw Data) ---
                 raw_moral1: d.moral1, raw_moral2: d.moral2, raw_moral3: d.moral3,
                 raw_time1: d.time1, raw_time2: d.time2, raw_time3: d.time3,
                 raw_esg1: d.esg1, raw_esg2: d.esg2, raw_esg3: d.esg3,
                 raw_risk1: d.risk1, raw_risk2: d.risk2, raw_risk3: d.risk3
             };
             
-            // --- 6. 决策路径 (Decision Path) 按顺序排列 ---
             if(decisionPath && decisionPath.length > 0) {
                 decisionPath.forEach((dp, index) => {
                     const step = index + 1;
                     if (dp) {
-                        // 修改2：明确记录 d1_duration 至 d5_duration
                         saveData[`d${step}_duration`] = dp.duration || 0;
 
-                        // A. 决策前的快照 (Snapshot BEFORE Decision)
                         if (dp.snapshot) {
                             saveData[`d${step}_snap_budget`] = dp.snapshot.budget;
                             saveData[`d${step}_snap_schedule`] = dp.snapshot.schedule;
                             saveData[`d${step}_snap_rep`] = dp.snapshot.reputation;
                         }
 
-                        // B. 此时各选项的具体参数 (Options Parameters AT Decision)
                         if (dp.optionsSnapshot) {
-                            // Option A (Risk)
                             const optA = dp.optionsSnapshot.A;
                             if (optA) {
-                                saveData[`d${step}_optA_fail_prob`] = optA.prob; // 修改2: 明确为 fail_prob
+                                saveData[`d${step}_optA_fail_prob`] = optA.prob; 
                                 saveData[`d${step}_optA_fail_b`] = optA.fail.b;
-                                saveData[`d${step}_optA_fail_s`] = optA.fail.s; // 修改3: 补充工期
+                                saveData[`d${step}_optA_fail_s`] = optA.fail.s; 
                                 saveData[`d${step}_optA_fail_r`] = optA.fail.r;
                                 saveData[`d${step}_optA_succ_b`] = optA.success.b;
-                                saveData[`d${step}_optA_succ_s`] = optA.success.s; // 修改3: 补充工期
-                                saveData[`d${step}_optA_succ_r`] = optA.success.r; // 修改2(v33.9.39): 补充声誉
+                                saveData[`d${step}_optA_succ_s`] = optA.success.s; 
+                                saveData[`d${step}_optA_succ_r`] = optA.success.r; 
                             }
                             
-                            // Option B (Compromise)
                             const optB = dp.optionsSnapshot.B;
                             if (optB) {
-                                saveData[`d${step}_optB_fail_prob`] = optB.prob; // 修改2: 明确为 fail_prob
+                                saveData[`d${step}_optB_fail_prob`] = optB.prob; 
                                 saveData[`d${step}_optB_fail_b`] = optB.fail.b;
-                                saveData[`d${step}_optB_fail_s`] = optB.fail.s; // 修改3: 补充工期
+                                saveData[`d${step}_optB_fail_s`] = optB.fail.s; 
                                 saveData[`d${step}_optB_fail_r`] = optB.fail.r;
                                 saveData[`d${step}_optB_succ_b`] = optB.success.b;
-                                saveData[`d${step}_optB_succ_s`] = optB.success.s; // 修改3: 补充工期
-                                saveData[`d${step}_optB_succ_r`] = optB.success.r; // 修改2(v33.9.39): 补充声誉
+                                saveData[`d${step}_optB_succ_s`] = optB.success.s; 
+                                saveData[`d${step}_optB_succ_r`] = optB.success.r; 
                             }
 
-                            // Option C (Compliance)
                             const optC = dp.optionsSnapshot.C;
                             if (optC && optC.c) {
                                 saveData[`d${step}_optC_cost_b`] = optC.c.b;
-                                saveData[`d${step}_optC_cost_s`] = optC.c.s; // 修改3: 补充工期
+                                saveData[`d${step}_optC_cost_s`] = optC.c.s; 
                                 saveData[`d${step}_optC_cost_r`] = optC.c.r;
                             }
                         }
 
-                        // C. 用户的最终决策 (User Decision)
                         saveData[`d${step}_type`] = dp.type || 'N/A';
                         saveData[`d${step}_exposed`] = dp.exposed === undefined ? false : dp.exposed;
                     }
