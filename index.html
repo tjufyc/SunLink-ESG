@@ -36,9 +36,10 @@
         .matrix-table { width: 100%; border-collapse: collapse; font-size: 9px; text-align: center; }
         .matrix-table th, .matrix-table td { border: 1px solid #cbd5e1; padding: 4px 2px; }
         .matrix-table th { background: #e2e8f0; color: #334155; }
-        .matrix-highlight { background-color: #dbeafe; border: 2px solid #2563eb !important; font-weight: bold; }
+        /* 修改4：高亮样式调整，适配彩色背景 */
+        .matrix-highlight { border: 2px solid #2563eb !important; font-weight: bold; background-color: rgba(255,255,255,0.6); }
         /* 概率行样式调整，支持内部span高亮 */
-        .prob-row { font-size: 8px; color: #64748b; background: #f8fafc; }
+        .prob-row { font-size: 8px; color: #64748b; background: rgba(255,255,255,0.5); }
         .prob-highlight { color: #dc2626; font-weight: bold; background-color: #fef2f2; padding: 0 2px; border-radius: 2px; border: 1px solid #fee2e2; }
 
         /* 问卷样式 */
@@ -69,18 +70,32 @@
         .grid-cell-text { font-size: 10px; font-weight: bold; text-align: center; }
         .grid-cell-sub { font-size: 8px; opacity: 0.8; }
 
-        /* 情境描述卡片 */
-        .ctx-desc-card { font-size: 10px; color: #64748b; background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 4px; transition: all 0.3s; opacity: 0.7; }
-        .ctx-label { font-weight: bold; color: #334155; display: block; margin-bottom: 2px; }
+        /* 修改3：情境描述卡片布局调整 (并行排列) */
+        .ctx-desc-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 8px; }
+        .ctx-desc-card { 
+            font-size: 9px; 
+            color: #475569; 
+            background: #f8fafc; 
+            padding: 6px; 
+            border-radius: 6px; 
+            border: 1px solid #cbd5e1; /* 加深未选中边框 */
+            transition: all 0.3s; 
+            opacity: 0.8; 
+            display: flex; flex-direction: column;
+            height: 100%;
+        }
+        .ctx-label { font-weight: bold; color: #334155; display: block; margin-bottom: 4px; font-size: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 2px;}
         
-        /* 高亮样式 */
+        /* 修改3：高亮样式增强 */
         .ctx-desc-card.highlighted {
-            background: #eff6ff;
-            border-color: #3b82f6;
+            background: #eff6ff; /* 更明显的背景 */
+            border-color: #2563eb;
             border-width: 2px;
-            color: #1e293b;
+            color: #0f172a;
             opacity: 1;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+            transform: scale(1.02); /* 微微放大 */
+            z-index: 5;
         }
         
         .copyright-text { font-size: 9px; color: #cbd5e1; text-align: center; margin-top: 12px; font-family: sans-serif; }
@@ -177,12 +192,13 @@
         }
         
         /* 标题 1: SunLink */
+        /* 修改1：加大行距 (line-height) */
         .poster-main-title {
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 56px; 
             font-weight: 900;
             margin-bottom: 0;
-            line-height: 1.1;
+            line-height: 1.4; /* 修改：从 1.1 改为 1.4 */
             letter-spacing: -1px;
             background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 50%, #38bdf8 100%);
             -webkit-background-clip: text;
@@ -191,13 +207,14 @@
         }
 
         /* 标题 2: ESG Simulator */
+        /* 修改1：加大行距 (margin-top) */
         .poster-sub-title {
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 26px; 
             font-weight: 600;
             color: #bef264; 
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9); 
-            margin-top: 8px;
+            margin-top: 20px; /* 修改：从 8px 改为 20px */
             letter-spacing: 3px; 
             text-transform: uppercase;
         }
@@ -233,10 +250,10 @@
         /* 3秒倒计时进度条 - 修正版 */
         /* 位置：ESG Simulator 和 Tianjin University 中间 */
         /* title是 top: 30%左右, footer是 bottom: 25%左右 */
-        /* 修改：Bar 向上移动15% -> 35% + 15% = 50% */
+        /* 我们把 Bar 放在 bottom: 35% 左右比较合适 */
         .poster-bar-container {
             position: absolute; 
-            bottom: 50%; /* 修改：35% -> 50% (上移15%) */
+            bottom: 35%; /* 调整高度位置 */
             left: 50%; 
             transform: translateX(-50%);
             width: 60%; /* 稍微加宽一点 */
@@ -298,7 +315,7 @@
 
         <!-- 3秒倒计时进度条：增加文字，位置居中 -->
         <div class="poster-bar-container">
-             <div class="poster-bar-text">挑战即将开始</div> 
+             <div class="poster-bar-text">挑战即将开始</div> <!-- 修改：文字变更 -->
             <div class="poster-bar"></div>
         </div>
 
@@ -366,10 +383,12 @@
                     每一个决定都将影响项目的最终命运
                 </p>
                 <div class="mt-4 pt-6 border-t border-slate-100 w-full">
-                    <p class="text-xs text-slate-400 font-medium">开发单位</p>
+                    <!-- 修改：增大行距 -->
+                    <p class="text-xs text-slate-400 font-medium mb-2">开发单位</p>
                     <p class="text-xs text-slate-600 font-bold mb-4">天津大学全球工程经营实验室</p>
                     
-                    <p class="text-xs text-slate-400 font-medium">联系人</p>
+                    <!-- 修改：增大行距 -->
+                    <p class="text-xs text-slate-400 font-medium mb-2">联系人</p>
                     <p class="text-xs text-slate-600 font-bold mb-2">傅老师 yongcheng_fu@126.com</p>
                     
                     <div class="copyright-text">© 2025 Tianjin University GIPC. All Rights Reserved.</div>
@@ -574,8 +593,8 @@
                     <h2 class="text-xl font-black text-slate-800 mb-4 border-l-4 border-blue-500 pl-3">项目概况 Briefing</h2>
                     
                     <div class="w-full h-40 mb-4 rounded-lg overflow-hidden shadow-sm border border-slate-200 relative bg-slate-100">
-                        <!-- 修改：使用稳定的太阳能光伏图片 -->
-                        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2072&auto=format&fit=crop" alt="Project Visualization" class="w-full h-full object-cover">
+                        <!-- 修改：替换为更稳定的 Unsplash 图片 -->
+                        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2072&auto=format&fit=crop" alt="Large Scale Solar Power Plant" class="w-full h-full object-cover">
                         <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-900/60 to-transparent p-2">
                             <p class="text-white text-xs font-bold">100MW 光伏 + 132kV 输电线路</p>
                         </div>
@@ -666,33 +685,39 @@
                         2. <span class="font-bold">项目越敏感</span>，各方关注度越高（如NGO、媒体），ESG管理不当被暴露的概率越高。
                     </div>
 
-                    <div class="w-full text-left space-y-1 border-t border-slate-100 pt-2">
+                    <div class="w-full text-left border-t border-slate-100 pt-2">
                         <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">企业资源 (Resource) 说明</h3>
-                        <div class="ctx-desc-card" id="desc-res-high">
-                            <span class="ctx-label text-emerald-600">高资源 (High)</span>
-                            公司资金雄厚，拥有成熟的ESG部门和专项预算，大力支持标杆项目建设，能承担较高的合规成本。
-                        </div>
-                        <div class="ctx-desc-card" id="desc-res-mid">
-                            <span class="ctx-label text-blue-600">中资源 (Mid)</span>
-                            公司有一定资源储备，能支持合理的合规成本，但需平衡利润考核，额外支出需谨慎论证。
-                        </div>
-                        <div class="ctx-desc-card" id="desc-res-low">
-                            <span class="ctx-label text-slate-600">低资源 (Low)</span>
-                            公司财务吃紧，无专门ESG团队，对项目支持十分有限，追求成本最低化，任何额外开支极难审批。
+                        <!-- 修改3：三列布局 -->
+                        <div class="ctx-desc-container">
+                            <div class="ctx-desc-card" id="desc-res-low">
+                                <span class="ctx-label text-slate-600">低资源 (Low)</span>
+                                财务吃紧，无专门ESG团队，对项目支持十分有限，追求成本最低化。
+                            </div>
+                            <div class="ctx-desc-card" id="desc-res-mid">
+                                <span class="ctx-label text-blue-600">中资源 (Mid)</span>
+                                有一定资源储备，能支持合理的合规成本，但需平衡利润考核。
+                            </div>
+                             <div class="ctx-desc-card" id="desc-res-high">
+                                <span class="ctx-label text-emerald-600">高资源 (High)</span>
+                                资金雄厚，拥有成熟的ESG部门和专项预算，大力支持标杆项目建设。
+                            </div>
                         </div>
 
                         <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 mt-4">敏感度 (Sensitivity) 说明</h3>
-                        <div class="ctx-desc-card" id="desc-sen-high">
-                            <span class="ctx-label text-red-600">高敏感度 (High)</span>
-                            案例：项目位于保护区边缘，涉及极危物种栖息地或原住民神圣领地。国际NGO长期驻点监督，任何违规极易被发现。
-                        </div>
-                        <div class="ctx-desc-card" id="desc-sen-mid">
-                            <span class="ctx-label text-yellow-600">中敏感度 (Mid)</span>
-                            案例：项目周边有一定村落，涉及常规征地拆迁。地方媒体和居民有一定维权意识，存在常规社会风险。
-                        </div>
-                        <div class="ctx-desc-card" id="desc-sen-low">
-                            <span class="ctx-label text-green-600">低敏感度 (Low)</span>
-                            案例：项目位于偏远无人荒漠，社区稀少。NGO和媒体极少关注，违规行为较难被外界发现。
+                         <!-- 修改3：三列布局 -->
+                        <div class="ctx-desc-container">
+                             <div class="ctx-desc-card" id="desc-sen-low">
+                                <span class="ctx-label text-green-600">低敏感度 (Low)</span>
+                                项目位于偏远无人荒漠，社区稀少。NGO和媒体极少关注。
+                            </div>
+                             <div class="ctx-desc-card" id="desc-sen-mid">
+                                <span class="ctx-label text-yellow-600">中敏感度 (Mid)</span>
+                                项目周边有一定村落，涉及常规征地拆迁，存在常规社会风险。
+                            </div>
+                             <div class="ctx-desc-card" id="desc-sen-high">
+                                <span class="ctx-label text-red-600">高敏感度 (High)</span>
+                                项目位于保护区边缘，或涉及原住民圣地。NGO长期监督，违规极易暴露。
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -879,9 +904,12 @@
                     </div>
 
                     <div class="mt-4 w-full text-center">
-                        <p class="text-xs text-slate-400 font-medium">开发单位</p>
+                        <!-- 修改：增大行距 -->
+                        <p class="text-xs text-slate-400 font-medium mb-2">开发单位</p>
                         <p class="text-xs text-slate-600 font-bold mb-4">天津大学全球工程经营实验室</p>
-                        <p class="text-xs text-slate-400 font-medium">联系人</p>
+                        
+                        <!-- 修改：增大行距 -->
+                        <p class="text-xs text-slate-400 font-medium mb-2">联系人</p>
                         <p class="text-xs text-slate-600 font-bold mb-2">傅老师 yongcheng_fu@126.com</p>
                         <div class="copyright-text">© 2025 Tianjin University GIPC. All Rights Reserved.</div>
                     </div>
@@ -906,6 +934,9 @@
             sensitivity: 'mid'  
         };
         let hasContextGenerated = false;
+        
+        // 新增：用于记录关卡开始时间
+        let levelStartTime = 0;
 
         // 实验组分配：Static (0) vs Dynamic (1)
         let experimentGroup = Math.random() < 0.5 ? 'static' : 'dynamic'; 
@@ -1401,90 +1432,90 @@
                     <tbody>
             `;
 
-            // 修改2：调整渲染顺序 A -> B -> C
+            // 修改4：调整渲染顺序 A -> B -> C，并添加背景色
 
-            // A 部分
+            // A 部分 (bg-red-50)
             html += `
-                <tr>
-                    <td rowspan="3" class="font-bold text-red-600">A 逃避</td>
-                    <td class="prob-row" colspan="10">
+                <tr class="bg-red-50">
+                    <td rowspan="3" class="font-bold text-red-600 border border-red-200">A 逃避</td>
+                    <td class="prob-row border border-red-200" colspan="10">
                         ${buildProbString('低敏感50%', '中敏感60%', '高敏感70%')}
                     </td>
                 </tr>
-                <tr>
-                    <td class="text-[8px]">未暴露</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">-24</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">-20</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">-16</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">+0.24</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">+0.2</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">+0.16</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">0</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">0</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">0</td>
+                <tr class="bg-red-50">
+                    <td class="text-[8px] border border-red-200">未暴露</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-red-200'}">-24</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-red-200'}">-20</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-red-200'}">-16</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-red-200'}">+0.24</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-red-200'}">+0.2</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-red-200'}">+0.16</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-red-200'}">0</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-red-200'}">0</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-red-200'}">0</td>
                 </tr>
-                <tr>
-                    <td class="text-[8px] text-red-500">暴露</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">-192</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">-160</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">-128</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">+1.92</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">+1.6</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">+1.28</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">-24</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">-20</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">-16</td>
+                <tr class="bg-red-50">
+                    <td class="text-[8px] text-red-500 border border-red-200">暴露</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-red-200'}">-192</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-red-200'}">-160</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-red-200'}">-128</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-red-200'}">+1.92</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-red-200'}">+1.6</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-red-200'}">+1.28</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-red-200'}">-24</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-red-200'}">-20</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-red-200'}">-16</td>
                 </tr>
             `;
 
-            // B 部分
+            // B 部分 (bg-yellow-50)
             html += `
-                <tr>
-                    <td rowspan="3" class="font-bold text-yellow-600">B 妥协</td>
-                    <td class="prob-row" colspan="10">
+                <tr class="bg-yellow-50">
+                    <td rowspan="3" class="font-bold text-yellow-600 border border-yellow-200">B 妥协</td>
+                    <td class="prob-row border border-yellow-200" colspan="10">
                         ${buildProbString('低敏感30%', '中敏感40%', '高敏感50%')}
                     </td>
                 </tr>
-                <tr>
-                    <td class="text-[8px]">未暴露</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">-48</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">-40</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">-32</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">+0.48</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">+0.4</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">+0.32</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">0</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">0</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">0</td>
+                <tr class="bg-yellow-50">
+                    <td class="text-[8px] border border-yellow-200">未暴露</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-yellow-200'}">-48</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-yellow-200'}">-40</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-yellow-200'}">-32</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-yellow-200'}">+0.48</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-yellow-200'}">+0.4</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-yellow-200'}">+0.32</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-yellow-200'}">0</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-yellow-200'}">0</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-yellow-200'}">0</td>
                 </tr>
-                <tr>
-                    <td class="text-[8px] text-red-500">暴露</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">-156</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">-130</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">-104</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">+1.56</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">+1.3</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">+1.04</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">-12</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">-10</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">-8</td>
+                <tr class="bg-yellow-50">
+                    <td class="text-[8px] text-red-500 border border-yellow-200">暴露</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-yellow-200'}">-156</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-yellow-200'}">-130</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-yellow-200'}">-104</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-yellow-200'}">+1.56</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-yellow-200'}">+1.3</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-yellow-200'}">+1.04</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-yellow-200'}">-12</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-yellow-200'}">-10</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-yellow-200'}">-8</td>
                 </tr>
             `;
             
-            // C 部分
+            // C 部分 (bg-green-50)
             html += `
-                <tr>
-                    <td class="font-bold text-blue-600">C 合规</td>
-                    <td>-</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">-120</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">-100</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">-80</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">+1.2</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">+1.0</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">+0.8</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">+8</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">+10</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">+12</td>
+                <tr class="bg-green-50">
+                    <td class="font-bold text-green-600 border border-green-200">C 合规</td>
+                    <td class="border border-green-200">-</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-green-200'}">-120</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-green-200'}">-100</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-green-200'}">-80</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-green-200'}">+1.2</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-green-200'}">+1.0</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-green-200'}">+0.8</td>
+                    <td class="${r==='low'?'matrix-highlight':'border border-green-200'}">+8</td>
+                    <td class="${r==='mid'?'matrix-highlight':'border border-green-200'}">+10</td>
+                    <td class="${r==='high'?'matrix-highlight':'border border-green-200'}">+12</td>
                 </tr>
             `;
 
@@ -1583,7 +1614,16 @@
             data.options.forEach((opt) => {
                 const calc = currentOptionsData[opt.type];
                 const btn = document.createElement('button');
-                btn.className = "relative w-full text-left bg-white border border-slate-200 rounded-xl p-3 shadow-sm active:bg-slate-50 active:scale-[0.98] transition-all duration-100";
+                
+                // 修改4：为不同选项设置背景颜色 (A: Red-50, B: Yellow-50, C: Green-50)
+                let bgClass = "";
+                let borderClass = "";
+                if (opt.type === 'A') { bgClass = "bg-red-50"; borderClass = "border-red-200"; }
+                else if (opt.type === 'B') { bgClass = "bg-yellow-50"; borderClass = "border-yellow-200"; }
+                else if (opt.type === 'C') { bgClass = "bg-green-50"; borderClass = "border-green-200"; }
+                else { bgClass = "bg-white"; borderClass = "border-slate-200"; }
+
+                btn.className = `relative w-full text-left ${bgClass} border ${borderClass} rounded-xl p-3 shadow-sm active:scale-[0.98] transition-all duration-100 hover:shadow-md`;
                 
                 // 修改3：传递完整的 currentOptionsData 给 handleDecision
                 btn.onclick = () => handleDecision(opt, calc, currentOptionsData);
@@ -1592,11 +1632,11 @@
                 let costPreview = "";
                 
                 if (opt.type === 'C') {
-                    riskLabel = `<span class="text-[10px] px-2 py-0.5 rounded-full font-medium text-blue-600 bg-blue-50 border border-blue-100">安全合规</span>`;
-                    costPreview = `<span class='text-blue-600'>固定结果: <span class="${budgetStyle}">利润${fmt(calc.c.b)}</span> | 工期+${fmt(calc.c.s)} | <span class="${repStyle}">声誉+${fmt(calc.c.r)}</span></span>`;
+                    riskLabel = `<span class="text-[10px] px-2 py-0.5 rounded-full font-medium text-green-700 bg-white border border-green-200">安全合规</span>`;
+                    costPreview = `<span class='text-green-700'>固定结果: <span class="${budgetStyle}">利润${fmt(calc.c.b)}</span> | 工期+${fmt(calc.c.s)} | <span class="${repStyle}">声誉+${fmt(calc.c.r)}</span></span>`;
                 } else {
                     const probPct = (calc.prob * 100).toFixed(0);
-                    const riskColor = opt.type === 'A' ? 'text-red-600 bg-red-50 border-red-100' : 'text-yellow-600 bg-yellow-50 border-yellow-100';
+                    const riskColor = opt.type === 'A' ? 'text-red-600 bg-white border-red-200' : 'text-yellow-600 bg-white border-yellow-200';
                     const labelText = opt.type === 'A' ? '逃避 (高风险)' : '妥协 (中风险)';
                     riskLabel = `<span class="text-[10px] px-2 py-0.5 rounded-full font-medium ${riskColor} border">${labelText}</span>`;
                     
@@ -1612,12 +1652,15 @@
                         ${riskLabel}
                     </div>
                     <p class="text-sm font-bold text-slate-700 leading-tight mb-2">${opt.text}</p>
-                    <div class="text-[10px] bg-slate-50 p-2 rounded border border-slate-100 leading-snug">
+                    <div class="text-[10px] bg-white/60 p-2 rounded border border-slate-100/50 leading-snug">
                         ${costPreview}
                     </div>
                 `;
                 container.appendChild(btn);
             });
+
+            // 新增：重置计时器
+            levelStartTime = Date.now();
         }
 
         function calculateOptionImpact(type) {
@@ -1657,11 +1700,15 @@
         }
 
         function handleDecision(opt, calc, allOptionsCalc) {
-            // 修改3：记录决策时的当前状态 + 所有选项的具体参数
+            // 新增：计算决策耗时 (秒)
+            const duration = (Date.now() - levelStartTime) / 1000;
+
+            // 修改3：记录决策时的当前状态 + 所有选项的具体参数 + 耗时
             decisionPath.push({ 
                 level: gameState.currentLevel, 
                 type: opt.type, 
                 exposed: false,
+                duration: duration, // <--- 新增字段
                 // 快照当前状态 (决策前)
                 snapshot: {
                     budget: gameState.budget,
@@ -1873,101 +1920,130 @@
             document.getElementById('comp-user-schedule').innerText = gameState.schedule.toFixed(2);
             document.getElementById('comp-user-rep').innerText = gameState.reputation.toFixed(2);
 
-            // 智能点评逻辑
-            // 基准：利润600，工期16，声誉160
-            const benchBudget = 600;
-            const benchSchedule = 16.0;
-            const benchRep = 160;
-            const repThreshold = 50; 
+            // --- 1. 智能点评逻辑优化 (v33.9.55 - 科学对比版) ---
             
+            // 默认备用中性值 (Fallback / Theoretical Neutral)
+            // 用于当云端无法连接或云端没有数据时
+            let industryAvg = { budget: 600.0, schedule: 16.0, rep: 60.0 };
+            let avgCount = 0;
+
+            // 尝试同步获取云端平均数据
+            try {
+                const response = await fetch(LC_API_URL + '?limit=200&order=-createdAt', {
+                    method: 'GET',
+                    headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const results = data.results || [];
+                    if (results.length > 0) {
+                        let sumB = 0, sumS = 0, sumR = 0;
+                        results.forEach(r => { 
+                            sumB += (r.budget || 0); 
+                            sumS += (r.schedule || 0); 
+                            sumR += (r.reputation || 0); 
+                        });
+                        industryAvg.budget = sumB / results.length;
+                        industryAvg.schedule = sumS / results.length;
+                        industryAvg.rep = sumR / results.length;
+                        avgCount = results.length;
+                    }
+                }
+            } catch (e) {
+                console.warn("点评数据预加载失败，使用理论中性值", e);
+            }
+
+            // 定义基准线
+            const bestCompliance = { budget: 600, schedule: 16.0, rep: 160.0 }; // 最佳合规
+            const repThreshold = 50; // 制裁线
+
             let feedbackHTML = "";
+            let analysisText = "";
 
-            // 计算各项偏差 (User - Bench)
-            const diffBudget = finalBudget - benchBudget;
-            const diffSchedule = gameState.schedule - benchSchedule; // 正数表示比基准慢
-            const diffRep = gameState.reputation - benchRep;
+            // 计算差距
+            const diffAvgBudget = finalBudget - industryAvg.budget;
+            const diffAvgRep = gameState.reputation - industryAvg.rep;
+            const diffCompRep = gameState.reputation - bestCompliance.rep;
 
-            // 修改2：丰富权衡分析内容，增加针对性点评，去除价值判断
-            let tradeOffText = "";
-            let strategyTag = "";
-
-            // 维度1：利润与工期的综合评价 (新增逻辑)
-            if (isDelayed) {
-                tradeOffText += `您的项目发生了工期延误，由此产生的<b class="text-red-600">违约赔偿金</b>严重侵蚀了最终利润。这提示在国际工程中，进度管理不仅是时间问题，更是核心的成本风险。`;
-                if (finalBudget < 200) {
-                     tradeOffText += ` 加上合规成本或罚款，项目经济效益已<b class="text-red-600">受到重创</b>。`;
-                }
-            } else {
-                if (diffBudget > 50) {
-                    tradeOffText += `您实现了<b class="text-emerald-600">较高的经济效益</b>，这得益于有效的进度控制（避免了罚款）以及对合规成本的控制。`;
-                } else if (diffBudget < -100) {
-                    tradeOffText += `尽管工期满足要求，但您的最终利润较低，主要是为了满足合规要求或应对暴露风险支付了<b class="text-orange-600">高昂的直接成本</b>。`;
-                } else {
-                    tradeOffText += `您在工期达标的基础上，维持了<b class="text-blue-600">合理的利润水平</b>。`;
-                }
-            }
-
-            // 维度2：合规与声誉的评价 (保留并微调)
-            if (diffRep < -20) {
-                 tradeOffText += ` 同时，您的声誉得分显著低于行业基准，这种<b class="text-yellow-600">声誉赤字</b>可能成为公司未来在该国市场的隐形障碍。`;
-            } else if (diffRep > 20) {
-                 tradeOffText += ` 同时，您积累了<b class="text-emerald-600">优质的声誉资产</b>，虽然为此投入了成本，但这有助于构建长期的社会许可（Social License）。`;
-            } else {
-                 tradeOffText += ` 声誉表现维持在<b class="text-slate-600">行业平均水平</b>，基本满足了世行ESF的底线要求。`;
-            }
-
-            // 维度3：风险偏好 (基于实际选择分布)
-            const riskCount = decisionPath.filter(d => d.type === 'A').length;
-            const compCount = decisionPath.filter(d => d.type === 'B').length;
-            const safeCount = decisionPath.filter(d => d.type === 'C').length;
-
+            // --- A. 策略风格分析 ---
+            const riskCount = decisionPath.filter(d => d.type === 'A').length; // 激进次数
+            const safeCount = decisionPath.filter(d => d.type === 'C').length; // 保守次数
+            
+            let styleDesc = "";
             if (riskCount >= 3) {
-                tradeOffText += " <br><br>从决策风格看，您多次选择了低成本但高不确定性的方案，表明您具有较高的**风险承受意愿**。";
+                styleDesc = "您采取了<b>激进冒险</b>的策略组合（多次选择A方案），倾向于以博弈换取短期利益。";
             } else if (safeCount >= 3) {
-                tradeOffText += " <br><br>从决策风格看，您的决策轨迹显示出对确定性的偏好，倾向于通过标准化流程来**规避潜在的不确定性**。";
-            } else if (compCount >= 3) {
-                tradeOffText += " <br><br>从决策风格看，您倾向于采用**折中方案**来缓解各方压力，这是一种在资源受限环境下的常见策略。";
+                styleDesc = "您采取了<b>高度稳健</b>的合规策略（多次选择C方案），展现了对风险的极度厌恶。";
+            } else {
+                styleDesc = "您采取了<b>灵活务实</b>的混合策略，在不同情境下权衡了利弊。";
             }
 
+            // --- B. 结果对比评价 ---
+            
+            // 1. 利润评价
+            let budgetEval = "";
+            if (finalBudget > industryAvg.budget + 100) {
+                budgetEval = `经济效益<span class="text-emerald-600 font-bold">显著优于行业平均</span>`;
+            } else if (finalBudget < industryAvg.budget - 100) {
+                budgetEval = `经济效益<span class="text-red-600 font-bold">低于行业平均</span>`;
+            } else {
+                budgetEval = `经济效益与行业平均<span class="text-blue-600 font-bold">持平</span>`;
+            }
+
+            // 2. 声誉评价 (双重对比)
+            let repEval = "";
+            if (gameState.reputation >= bestCompliance.rep - 10) {
+                repEval = `声誉表现达到了<span class="text-indigo-600 font-bold">最佳合规标杆</span>水准`;
+            } else if (gameState.reputation > industryAvg.rep + 20) {
+                repEval = `声誉积累<span class="text-emerald-600 font-bold">远超同僚</span>`;
+            } else if (gameState.reputation < industryAvg.rep - 20) {
+                repEval = `声誉<span class="text-yellow-600 font-bold">落后于行业主流</span>`;
+            } else {
+                repEval = `声誉表现处于<span class="text-slate-600 font-bold">行业主流区间</span>`;
+            }
+
+            // 组合分析文本
+            analysisText = `在本次挑战中，${styleDesc}最终结果显示，您的${budgetEval}，同时${repEval}。`;
+            
+            // 如果是首位用户或离线
+            if (avgCount === 0) {
+                analysisText += `<br><span class="text-gray-400 italic text-xs">(注：当前暂无足够云端数据，对比基于理论中性值)</span>`;
+            }
+
+            // --- C. 生成最终 HTML ---
             if (gameState.reputation < repThreshold) {
-                // Case 1: 黑名单 (最严重)
+                // Case 1: 失败 (制裁)
                 feedbackHTML = `
                     <strong class="text-red-600 block mb-2">⚠️ 项目触发制裁机制 (强制退场)</strong>
                     <div class="bg-slate-100 p-2 rounded text-xs text-slate-700">
                         <span class="font-bold">管理洞察：</span><br>
-                        合规是国际项目的生存底线。您的声誉分已低于安全阈值（${repThreshold}分），直接触发了世行的黑名单机制。无论经济收益如何，一旦突破底线，项目商业价值即归零，且会对母公司造成长远的国际市场准入障碍。
+                        虽然${styleDesc}，但您的声誉分已低于安全阈值（${repThreshold}分），直接触发了世行的黑名单机制。无论经济收益如何，项目已失败。合规是国际工程的生存底线。
                     </div>
                 `;
             } else {
-                
                 let overallTitle = "";
                 let overallColor = "";
                 
-                // 判定总体评价 (中性词汇)
-                if (diffBudget >= 0 && diffSchedule <= 0 && diffRep >= -10) {
-                    overallTitle = "🌟 综合价值最大化"; 
+                // 判定总体评价 Title
+                if (finalBudget > industryAvg.budget && gameState.reputation > industryAvg.rep) {
+                    overallTitle = "🏆 卓越的项目管理"; 
                     overallColor = "text-emerald-600";
-                } else if (diffBudget < 0 && diffSchedule <= 0 && diffRep >= 0) {
-                    overallTitle = "🛡️ 风险规避型管理";
+                } else if (safeCount >= 3 && gameState.reputation >= 100) {
+                    overallTitle = "🛡️ 负责任的长期主义者";
                     overallColor = "text-blue-600";
-                } else if (diffSchedule > 0) {
-                    overallTitle = "⚠️ 进度管理承压";
+                } else if (riskCount >= 3 && finalBudget > 800) {
+                    overallTitle = "💰 激进的利润追逐者";
                     overallColor = "text-orange-500";
-                } else if (diffBudget >= 0 && diffRep < -20) {
-                    overallTitle = "📊 风险偏好型管理"; 
-                    overallColor = "text-yellow-600";
                 } else {
-                    overallTitle = "⚖️ 均衡型管理"; 
-                    overallColor = "text-slate-600";
+                    overallTitle = "⚖️ 均衡发展的管理者"; 
+                    overallColor = "text-slate-700";
                 }
                 
                 feedbackHTML = `
                     <strong class="${overallColor} block mb-2">${overallTitle}</strong>
                     <div class="bg-slate-100 p-2 rounded text-xs text-slate-700 border-l-2 border-slate-300">
-                        <span class="font-bold text-slate-800">⚖️ 权衡分析 (Trade-off)：</span><br>
-                        ${tradeOffText}
-                        <br><br>
-                        这种决策模式反映了项目经理在资源约束（Resources Constraints）下的真实博弈。没有绝对的对错，只有不同优先级带来的不同后果。
+                        <span class="font-bold text-slate-800">📊 智能画像：</span><br>
+                        ${analysisText}
                     </div>
                 `;
             }
@@ -2013,11 +2089,13 @@
             };
             
             // --- 6. 决策路径 (Decision Path) 按顺序排列 ---
-            // 修改2 & 3 & 4：明确字段名、补充工期数据、按逻辑顺序排列
             if(decisionPath && decisionPath.length > 0) {
                 decisionPath.forEach((dp, index) => {
                     const step = index + 1;
                     if (dp) {
+                        // 修改2：明确记录 d1_duration 至 d5_duration
+                        saveData[`d${step}_duration`] = dp.duration || 0;
+
                         // A. 决策前的快照 (Snapshot BEFORE Decision)
                         if (dp.snapshot) {
                             saveData[`d${step}_snap_budget`] = dp.snapshot.budget;
