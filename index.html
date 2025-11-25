@@ -140,9 +140,174 @@
             animation: box-flash-red 1s infinite;
         }
 
+        /* --- 启动海报 (v4.4 Layout & Bar Fix Edition) --- */
+        #screen-poster {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 9999 !important;
+            background-color: #050505; 
+            display: flex; flex-direction: column; justify-content: flex-end;
+            transition: opacity 0.8s ease-out;
+        }
+        
+        .poster-img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: 101;
+            display: block; 
+            filter: brightness(0.8) contrast(1.1);
+        }
+        
+        /* 遮罩层 */
+        .poster-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.9) 100%);
+            z-index: 102;
+        }
+
+        /* 标题容器：上移 10% */
+        .poster-title-container {
+            position: absolute;
+            top: 30%; /* 原40%，上移10% */
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            width: 100%;
+            text-align: center;
+            z-index: 103;
+            padding: 0 20px;
+        }
+        
+        /* 标题 1: SunLink */
+        .poster-main-title {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 56px; 
+            font-weight: 900;
+            margin-bottom: 0;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 50%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.9));
+        }
+
+        /* 标题 2: ESG Simulator */
+        .poster-sub-title {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 26px; 
+            font-weight: 600;
+            color: #bef264; 
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9); 
+            margin-top: 8px;
+            letter-spacing: 3px; 
+            text-transform: uppercase;
+        }
+
+        /* 底部机构信息 (位置修正：上移至25%，防止被遮挡) */
+        .poster-footer-info {
+            position: absolute; 
+            bottom: 25%; /* 修改：10% -> 25% (上移15%) */
+            left: 0; width: 100%;
+            text-align: center;
+            z-index: 103;
+            color: #f8fafc;
+            font-family: "Georgia", serif; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.95);
+        }
+        .poster-org-name {
+            font-size: 18px; 
+            font-weight: bold;
+            display: block;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+            text-transform: uppercase; 
+        }
+        .poster-center-name {
+            font-size: 13px;
+            opacity: 1.0; 
+            display: block;
+            letter-spacing: 0.5px;
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+
+        /* 3秒倒计时进度条 - 修正版 */
+        /* 位置：ESG Simulator 和 Tianjin University 中间 */
+        /* title是 top: 30%左右, footer是 bottom: 25%左右 */
+        /* 修改：Bar 向上移动15% -> 35% + 15% = 50% */
+        .poster-bar-container {
+            position: absolute; 
+            bottom: 50%; /* 修改：35% -> 50% (上移15%) */
+            left: 50%; 
+            transform: translateX(-50%);
+            width: 60%; /* 稍微加宽一点 */
+            height: 32px; /* 增高，以便容纳文字 */
+            background: rgba(0,0,0,0.6); /* 半透明黑底 */
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px; 
+            overflow: hidden; 
+            z-index: 103;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        
+        /* 内部进度条 */
+        .poster-bar {
+            width: 100%; 
+            height: 100%; 
+            background: linear-gradient(90deg, #38bdf8, #2563eb); /* 蓝渐变 */
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+            animation: posterCountdown 3s linear forwards;
+        }
+        @keyframes posterCountdown { 
+            0% { width: 0%; } /* 从0开始增长，模拟加载/开始 */
+            100% { width: 100%; } 
+        }
+        
+        /* 进度条上的文字 */
+        .poster-bar-text {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #ffffff;
+            letter-spacing: 2px;
+            z-index: 104;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+
     </style>
 </head>
 <body class="flex flex-col text-slate-800 bg-slate-100">
+
+    <!-- 0. 启动海报 (v4.4 Layout & Bar Fix Edition) -->
+    <div id="screen-poster">
+        <!-- 背景图 -->
+        <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?q=80&w=2070&auto=format&fit=crop" 
+             alt="Green Earth Power Grid" 
+             id="poster-image-element"
+             class="poster-img">
+             
+        <!-- 遮罩层 -->
+        <div class="poster-overlay"></div>
+
+        <!-- 中间大标题：已上移 -->
+        <div class="poster-title-container">
+            <div class="poster-main-title">SunLink</div>
+            <div class="poster-sub-title">ESG Simulator</div>
+        </div>
+
+        <!-- 3秒倒计时进度条：增加文字，位置居中 -->
+        <div class="poster-bar-container">
+             <div class="poster-bar-text">挑战即将开始</div> 
+            <div class="poster-bar"></div>
+        </div>
+
+        <!-- 底部机构文字 -->
+        <div class="poster-footer-info">
+            <span class="poster-org-name">Tianjin University</span>
+            <span class="poster-center-name">Global Infrastructure Projects Center</span>
+        </div>
+    </div>
 
     <!-- 顶部导航栏 (ID="main-header") -->
     <header id="main-header" class="bg-white shadow-sm border-b border-slate-200 z-50 px-3 py-2 w-full absolute top-0 left-0 hidden">
@@ -190,7 +355,7 @@
     <main class="flex-1 relative w-full h-full max-w-lg mx-auto bg-white md:my-4 md:rounded-2xl md:shadow-xl md:border md:border-slate-200 overflow-hidden flex flex-col z-0">
         
         <!-- 1. 开场 (首页) -->
-        <div id="screen-start" class="absolute inset-0 z-20 flex flex-col bg-white fade-in overflow-y-auto">
+        <div id="screen-start" class="absolute inset-0 z-20 flex flex-col bg-white fade-in overflow-y-auto hidden"> <!-- 注意：默认先hidden，等海报结束后显示 -->
             <div class="flex-1 p-6 flex flex-col items-center justify-center text-center pb-40">
                 <div class="bounce-earth mb-4">🌍</div>
                 
@@ -409,7 +574,8 @@
                     <h2 class="text-xl font-black text-slate-800 mb-4 border-l-4 border-blue-500 pl-3">项目概况 Briefing</h2>
                     
                     <div class="w-full h-40 mb-4 rounded-lg overflow-hidden shadow-sm border border-slate-200 relative bg-slate-100">
-                        <img src="https://image.pollinations.ai/prompt/A%20realistic,%20wide-angle%20engineering%20visualization%20of%20a%20large-scale%20solar%20power%20plant%20project%20in%20an%20African%20savanna%20setting.%20The%20foreground%20features%20rows%20of%20modern%20photovoltaic%20panels%20glistening%20in%20the%20sun.%20In%20the%20middle%20distance,%20high-voltage%20transmission%20towers%20(132kV%20lattice%20steel%20towers)%20stretch%20across%20the%20landscape,%20connecting%20the%20solar%20farm%20to%20the%20horizon.%20The%20background%20shows%20a%20vast,%20open%20savanna%20with%20sparse%20acacia%20trees%20and%20a%20clear%20blue%20sky.%20The%20style%20should%20be%20professional,%20similar%20to%20an%20architectural%20rendering%20or%20infrastructure%20project%20photo,%20bright%20and%20clear.?width=1536&height=1024&nologo=true" alt="Project Visualization" class="w-full h-full object-cover">
+                        <!-- 修改：使用稳定的太阳能光伏图片 -->
+                        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2072&auto=format&fit=crop" alt="Project Visualization" class="w-full h-full object-cover">
                         <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-900/60 to-transparent p-2">
                             <p class="text-white text-xs font-bold">100MW 光伏 + 132kV 输电线路</p>
                         </div>
@@ -774,6 +940,58 @@
         
         let currentSessionId = null;
         let decisionPath = []; 
+
+        // --- 页面初始化逻辑 (重写版 v33.9.47 - 3秒同步) ---
+        (function() {
+            const MIN_DISPLAY_TIME = 3000; // 严格同步CSS动画时间
+            const MAX_WAIT_TIME = 5500;    // 兜底
+            
+            const startTime = Date.now();
+            let hasEntered = false;
+
+            // 核心进入函数
+            function enterApp() {
+                if (hasEntered) return;
+                
+                const now = Date.now();
+                const elapsed = now - startTime;
+                // 计算还需要等多久才能满足 MIN_DISPLAY_TIME
+                const remaining = Math.max(0, MIN_DISPLAY_TIME - elapsed);
+
+                // 只有当剩余等待时间 > 0 时才 setTimeout，否则直接执行
+                setTimeout(() => {
+                    if (hasEntered) return; // 双重检查
+                    hasEntered = true;
+
+                    const poster = document.getElementById('screen-poster');
+                    const startScreen = document.getElementById('screen-start');
+                    
+                    if (poster) poster.style.opacity = 0; // 淡出动画
+                    if (startScreen) startScreen.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        if (poster) poster.style.display = 'none';
+                    }, 800); // 等待CSS transition结束
+                }, remaining);
+            }
+
+            // 监听图片加载
+            const img = document.getElementById('poster-image-element');
+            if (img) {
+                if (img.complete) {
+                    enterApp();
+                } else {
+                    img.onload = enterApp;
+                    img.onerror = enterApp; // 失败也进
+                }
+            } else {
+                enterApp();
+            }
+
+            // 兜底：无论图片是否加载成功，MAX_WAIT_TIME 后强制进入
+            setTimeout(enterApp, MAX_WAIT_TIME);
+        })();
+
 
         // --- LeanCloud Config ---
         const LC_APP_ID = "esL6o1jmpB3rVGlkjsE6OFRu-MdYXbMMI";
