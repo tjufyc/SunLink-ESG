@@ -42,11 +42,25 @@
         .prob-highlight { color: #dc2626; font-weight: bold; background-color: #fef2f2; padding: 0 2px; border-radius: 2px; border: 1px solid #fee2e2; }
 
         /* 问卷样式 */
-        .likert-scale { display: flex; justify-content: space-between; margin-top: 8px; margin-bottom: 16px; }
+        .likert-scale { display: flex; justify-content: space-between; margin-top: 8px; margin-bottom: 16px; padding: 4px; border-radius: 8px; transition: background 0.3s;}
         .likert-opt { display: flex; flex-direction: column; items-center; text-align: center; cursor: pointer; width: 18%; }
         .likert-circle { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; transition: all 0.2s; font-size: 10px; font-weight: bold; color: #64748b; }
         .likert-opt.selected .likert-circle { background-color: #3b82f6; border-color: #3b82f6; color: white; transform: scale(1.1); }
         .likert-label { font-size: 8px; color: #94a3b8; line-height: 1.2; }
+        
+        /* 问卷未填高亮 */
+        .scroll-highlight { animation: pulse-bg 1.5s infinite; border: 1px solid #ef4444; }
+        @keyframes pulse-bg { 0% { background-color: #fee2e2; } 50% { background-color: #fff; } 100% { background-color: #fee2e2; } }
+
+        /* 表单输入样式 */
+        .form-group { margin-bottom: 12px; padding: 4px; border-radius: 6px; transition: background 0.3s; }
+        .form-label { display: block; font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 4px; }
+        .form-select, .form-input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; background: #fff; }
+        .radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .radio-label { display: flex; items-center: center; font-size: 12px; color: #475569; cursor: pointer; background: #f1f5f9; padding: 6px 10px; border-radius: 16px; border: 1px solid transparent; transition: all 0.2s; }
+        .radio-label.checked { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; font-weight: bold; }
+        .radio-label input { display: none; }
+
 
         /* 九宫格随机样式 */
         .grid-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 100%; max-width: 300px; margin: 0 auto; }
@@ -77,12 +91,60 @@
         /* 跳动地球动画 */
         .bounce-earth { animation: bounce 2s infinite; font-size: 80px; display: block; text-align: center; }
         @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
+        
+        /* 底部按钮容器通用样式 */
+        .nav-footer {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(255,255,255,0.95);
+            border-top: 1px solid #f1f5f9;
+            backdrop-filter: blur(4px);
+            z-index: 30;
+            padding: 16px;
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+            display: flex; gap: 12px; /* 按钮间距 */
+        }
+
+        /* 主要按钮 (右侧) */
+        .btn-primary {
+            flex: 2; /* 占据更多空间 */
+            background: #1e293b; color: white;
+            font-weight: bold; border-radius: 12px;
+            padding: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.1s;
+        }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* 次要/返回按钮 (左侧) */
+        .btn-secondary {
+            flex: 1; /* 占据较少空间 */
+            background: #f1f5f9; color: #64748b;
+            font-weight: bold; border-radius: 12px;
+            padding: 14px; border: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .btn-secondary:active { background: #e2e8f0; }
+        
+        /* 强耦合UI高亮样式 */
+        .highlight-short-term { background-color: #f0fdf4; color: #15803d; font-weight: bold; padding: 0 2px; border-radius: 2px; border: 1px solid #bbf7d0; }
+        .highlight-long-term { background-color: #fefce8; color: #854d0e; font-weight: bold; padding: 0 2px; border-radius: 2px; border: 1px solid #fef08a; }
+
+        /* 状态栏红色闪烁动画 */
+        @keyframes box-flash-red {
+            0%, 100% { background-color: #f8fafc; border-color: #e2e8f0; }
+            50% { background-color: #fee2e2; border-color: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+        }
+        .animate-box-flash {
+            animation: box-flash-red 1s infinite;
+        }
 
     </style>
 </head>
 <body class="flex flex-col text-slate-800 bg-slate-100">
 
-    <!-- 顶部导航栏 (ID="main-header") - 初始隐藏，进入Briefing后显示 -->
+    <!-- 顶部导航栏 (ID="main-header") -->
     <header id="main-header" class="bg-white shadow-sm border-b border-slate-200 z-50 px-3 py-2 w-full absolute top-0 left-0 hidden">
         <div class="flex justify-between items-center mb-2 pt-safe-top mt-2"> 
             <!-- 文字 Logo 样式 -->
@@ -100,11 +162,11 @@
                 <span id="val-budget" class="text-emerald-600 text-base">1000.00</span>
                 <div id="float-budget" class="absolute top-0 left-1/2 -translate-x-1/2"></div>
             </div>
-            <div class="flex flex-col items-center bg-slate-50 p-1 rounded border border-slate-200 relative overflow-visible" id="box-schedule">
-                <span class="text-[10px] text-slate-400 scale-90">工期(月)</span>
+            <div class="flex flex-col items-center bg-slate-50 p-1 rounded border border-slate-200 relative overflow-visible transition-all duration-300" id="box-schedule">
+                <span id="lbl-schedule" class="text-[10px] text-slate-400 scale-90">进度(剩余)</span>
                 <div class="flex items-baseline">
-                    <span id="val-schedule" class="text-blue-600 text-base">12.00</span>
-                    <span class="text-[10px] text-slate-300 font-normal ml-0.5">/16</span>
+                    <span id="val-schedule" class="text-blue-600 text-base">4.0</span>
+                    <span class="text-[10px] text-slate-300 font-normal ml-0.5">月</span>
                 </div>
                 <div id="float-schedule" class="absolute top-0 left-1/2 -translate-x-1/2"></div>
             </div>
@@ -127,15 +189,13 @@
     <!-- 主内容区域 -->
     <main class="flex-1 relative w-full h-full max-w-lg mx-auto bg-white md:my-4 md:rounded-2xl md:shadow-xl md:border md:border-slate-200 overflow-hidden flex flex-col z-0">
         
-        <!-- 1. 开场 -->
+        <!-- 1. 开场 (首页) -->
         <div id="screen-start" class="absolute inset-0 z-20 flex flex-col bg-white fade-in overflow-y-auto">
-            
             <div class="flex-1 p-6 flex flex-col items-center justify-center text-center pb-40">
-                <!-- 跳动地球移到这里，文字上方 -->
                 <div class="bounce-earth mb-4">🌍</div>
                 
                 <h2 class="text-2xl font-black text-slate-800 mb-2">SunLink <span class="text-blue-600">ESG</span></h2>
-                <p class="text-sm font-medium text-slate-500 mb-4">国际工程管理模拟挑战</p>
+                <p class="text-sm font-medium text-slate-500 mb-4">国际工程项目ESG管理模拟挑战</p>
                 <p class="text-sm text-slate-600 mb-8 leading-relaxed px-4">
                     你需要平衡<b>工期压力</b>、<b>项目利润</b>与<b>合规要求</b><br>
                     每一个决定都将影响项目的最终命运
@@ -157,17 +217,15 @@
             </div>
         </div>
 
-        <!-- 1.5 调查问卷 (含知情同意书) -->
+        <!-- 1.5 调查问卷 (重构) -->
         <div id="screen-survey" class="hidden flex-col h-full fade-in absolute inset-0 z-20 bg-white">
-            <!-- SunLink 文字图标 -->
             <div class="pt-4 pb-2 px-6 flex justify-center items-center border-b border-slate-100 bg-white z-10">
                  <div class="text-2xl mr-2">🌍</div>
                  <div class="font-black text-xl tracking-tight text-slate-800">SunLink <span class="text-blue-600">ESG</span></div>
             </div>
 
-            <div class="px-6 pt-4 flex-1 overflow-y-auto pb-32">
+            <div class="px-6 pt-4 flex-1 overflow-y-auto pb-40 scroll-smooth" id="survey-container">
                 
-                <!-- 知情同意书 -->
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-6 text-xs text-slate-600 leading-relaxed shadow-sm">
                     <h4 class="font-bold text-blue-800 mb-2 text-sm">🔬 实验研究知情同意书</h4>
                     <p class="mb-2">您即将参与的是一项关于国际工程 ESG 决策行为的学术研究实验，由天津大学全球工程经营实验室开发。</p>
@@ -181,41 +239,150 @@
                 <h2 class="text-xl font-black text-slate-800 mb-6">📋 实验前小调查</h2>
                 
                 <form id="survey-form" onsubmit="submitSurvey(event)">
-                    <!-- ESG 认同 -->
+                    <!-- 0. 个人背景信息 -->
                     <div class="mb-6">
-                        <!-- 修改标题为 ESG 认同 -->
-                        <p class="text-xs font-bold text-blue-600 mb-2 uppercase">第一部分：ESG 认同</p>
+                        <p class="text-xs font-bold text-slate-500 mb-2 uppercase border-b pb-1">基本信息</p>
                         
-                        <div class="mb-4">
-                            <p class="text-sm font-medium mb-2">1. 我认为 ESG 主要是为了公关形象，对项目实质价值有限。</p>
-                            <div class="likert-scale" data-name="esg1"></div> 
+                        <div class="grid grid-cols-2 gap-4 mb-3">
+                             <div class="form-group" id="q-gender">
+                                <label class="form-label">性别</label>
+                                <select class="form-select" data-field="gender">
+                                    <option value="">请选择</option>
+                                    <option value="M">男</option>
+                                    <option value="F">女</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="q-age">
+                                <label class="form-label">年龄</label>
+                                <select class="form-select" data-field="age">
+                                    <option value="">请选择</option>
+                                    <option value="<20">20岁以下</option>
+                                    <option value="20-25">20-25岁</option>
+                                    <option value="26-30">26-30岁</option>
+                                    <option value="31-35">31-35岁</option>
+                                    <option value="36-40">36-40岁</option>
+                                    <option value="41-45">41-45岁</option>
+                                    <option value="46-50">46-50岁</option>
+                                    <option value="51-55">51-55岁</option>
+                                    <option value="56-60">56-60岁</option>
+                                    <option value="61-65">61-65岁</option>
+                                    <option value="65+">65岁以上</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-4">
-                            <p class="text-sm font-medium mb-2">2. 与项目带来的经济利益相比，ESG议题可以做出妥协。</p>
-                            <div class="likert-scale" data-name="esg2"></div>
+
+                        <div class="form-group" id="q-major">
+                             <label class="form-label">专业背景</label>
+                             <select class="form-select" data-field="major">
+                                <option value="">请选择</option>
+                                <option value="Engineering">工程技术</option>
+                                <option value="Law">法律/合规</option>
+                                <option value="Finance">财务/经济</option>
+                                <option value="Environment">环境/安全</option>
+                                <option value="Business">商务/管理</option>
+                                <option value="Other">其他</option>
+                            </select>
                         </div>
-                        <div class="mb-4">
-                            <p class="text-sm font-medium mb-2">3. 哪怕牺牲短期利润，企业也应严格遵守环境与社会标准。</p>
-                            <div class="likert-scale" data-name="esg3"></div>
+
+                        <div class="form-group" id="q-pm">
+                            <label class="form-label">您是否担任过项目经理？</label>
+                            <div class="radio-group">
+                                <label class="radio-label" onclick="selectRadio(this, 'role_pm', 'yes')">
+                                    <input type="radio" name="role_pm" value="yes"> 是
+                                </label>
+                                <label class="radio-label" onclick="selectRadio(this, 'role_pm', 'no')">
+                                    <input type="radio" name="role_pm" value="no"> 否
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="q-hse">
+                            <label class="form-label">您是否担任过HSE/ESG部门经理？</label>
+                            <div class="radio-group">
+                                <label class="radio-label" onclick="selectRadio(this, 'role_hse', 'yes')">
+                                    <input type="radio" name="role_hse" value="yes"> 是
+                                </label>
+                                <label class="radio-label" onclick="selectRadio(this, 'role_hse', 'no')">
+                                    <input type="radio" name="role_hse" value="no"> 否
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="q-exp">
+                            <label class="form-label">以往是否经历过ESG负面事件(如环保被罚)？</label>
+                            <div class="radio-group">
+                                <label class="radio-label" onclick="selectRadio(this, 'exp_neg', 'yes')">
+                                    <input type="radio" name="exp_neg" value="yes"> 是
+                                </label>
+                                <label class="radio-label" onclick="selectRadio(this, 'exp_neg', 'no')">
+                                    <input type="radio" name="exp_neg" value="no"> 否
+                                </label>
+                            </div>
                         </div>
                     </div>
 
                     <hr class="border-slate-100 my-6">
 
-                    <!-- 风险偏好 -->
+                    <!-- 1. 个人特质 -->
                     <div class="mb-6">
-                        <p class="text-xs font-bold text-orange-600 mb-2 uppercase">第二部分：决策偏好</p>
+                        <p class="text-xs font-bold text-purple-600 mb-2 uppercase">第一部分：个人特质</p>
+                        <div class="mb-4" id="q-moral1">
+                            <p class="text-sm font-medium mb-2">1. 对我来说，做一个有道德的人是非常重要的。</p>
+                            <div class="likert-scale" data-name="moral1"></div>
+                        </div>
+                        <div class="mb-4" id="q-moral2">
+                            <p class="text-sm font-medium mb-2">2. 如果我的行为被视为是不道德的，我会感到羞愧。</p>
+                            <div class="likert-scale" data-name="moral2"></div>
+                        </div>
+                        <div class="mb-4" id="q-moral3">
+                            <p class="text-sm font-medium mb-2">3. 即使没有人在看，我也坚持做正确（合乎道德）的事。</p>
+                            <div class="likert-scale" data-name="moral3"></div>
+                        </div>
+                        <div class="mb-4" id="q-time1">
+                            <p class="text-sm font-medium mb-2">4. 我通常愿意放弃眼前的利益，以换取未来更大的回报。</p>
+                            <div class="likert-scale" data-name="time1"></div>
+                        </div>
+                        <div class="mb-4" id="q-time2">
+                            <p class="text-sm font-medium mb-2">5. 我做决策时，经常考虑其对未来3-5年的影响。</p>
+                            <div class="likert-scale" data-name="time2"></div>
+                        </div>
+                        <div class="mb-4" id="q-time3">
+                            <p class="text-sm font-medium mb-2">6. 我不喜欢等待，更倾向于“落袋为安”。</p>
+                            <div class="likert-scale" data-name="time3"></div>
+                        </div>
+                    </div>
+
+                    <!-- 2. ESG 认同 -->
+                    <div class="mb-6">
+                        <p class="text-xs font-bold text-blue-600 mb-2 uppercase">第二部分：ESG 认同</p>
                         
-                        <div class="mb-4">
-                            <p class="text-sm font-medium mb-2">4. 为了获得巨大的潜在收益，我愿意承担较高的失败风险。</p>
+                        <div class="mb-4" id="q-esg1">
+                            <p class="text-sm font-medium mb-2">7. 我认为 ESG 主要是为了公关形象，对项目实质价值有限。</p>
+                            <div class="likert-scale" data-name="esg1"></div> 
+                        </div>
+                        <div class="mb-4" id="q-esg2">
+                            <p class="text-sm font-medium mb-2">8. 与项目带来的经济利益相比，ESG议题可以做出妥协。</p>
+                            <div class="likert-scale" data-name="esg2"></div>
+                        </div>
+                        <div class="mb-4" id="q-esg3">
+                            <p class="text-sm font-medium mb-2">9. 哪怕牺牲短期利润，企业也应严格遵守环境与社会标准。</p>
+                            <div class="likert-scale" data-name="esg3"></div>
+                        </div>
+                    </div>
+
+                    <!-- 3. 决策偏好 -->
+                    <div class="mb-6">
+                        <p class="text-xs font-bold text-orange-600 mb-2 uppercase">第三部分：决策偏好</p>
+                        <div class="mb-4" id="q-risk1">
+                            <p class="text-sm font-medium mb-2">10. 为了获得巨大的潜在收益，我愿意承担较高的失败风险。</p>
                             <div class="likert-scale" data-name="risk1"></div>
                         </div>
-                        <div class="mb-4">
-                            <p class="text-sm font-medium mb-2">5. 我做事通常通过“打擦边球”来提高效率。</p>
+                        <div class="mb-4" id="q-risk2">
+                            <p class="text-sm font-medium mb-2">11. 我做事通常通过“打擦边球”来提高效率。</p>
                             <div class="likert-scale" data-name="risk2"></div>
                         </div>
-                        <div class="mb-4">
-                            <p class="text-sm font-medium mb-2">6. 我宁愿稳妥地少赚一点，也不愿冒任何违规的风险。</p>
+                        <div class="mb-4" id="q-risk3">
+                            <p class="text-sm font-medium mb-2">12. 我宁愿稳妥地少赚一点，也不愿冒任何违规的风险。</p>
                             <div class="likert-scale" data-name="risk3"></div>
                         </div>
                     </div>
@@ -223,21 +390,24 @@
                     <div class="h-8"></div>
                 </form>
             </div>
-            <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30 pb-safe-area">
-                <button onclick="submitSurvey()" id="btn-survey" class="w-full bg-slate-800 text-white text-sm font-bold py-4 rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed leading-tight" disabled>
-                    同意参与本实验研究，提交并继续
+            <!-- 底部并排按钮 -->
+            <div class="nav-footer">
+                <button class="btn-secondary" onclick="backToStart()">
+                    ⬅️ 返回
+                </button>
+                <button class="btn-primary" onclick="validateAndSubmit()" id="btn-survey">
+                    提交并继续 ➡️
                 </button>
             </div>
         </div>
 
-        <!-- 2. 简报 (此时显示Header) -->
+        <!-- 2. 简报 (内容微调) -->
         <div id="screen-briefing" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
-            <div class="flex-1 overflow-y-auto scroll-smooth pb-24">
+            <div class="flex-1 overflow-y-auto scroll-smooth pb-32">
                 <div class="header-spacer"></div>
                 <div class="px-5 pt-2">
                     <h2 class="text-xl font-black text-slate-800 mb-4 border-l-4 border-blue-500 pl-3">项目概况 Briefing</h2>
                     
-                    <!-- 项目示意图 -->
                     <div class="w-full h-40 mb-4 rounded-lg overflow-hidden shadow-sm border border-slate-200 relative bg-slate-100">
                         <img src="https://image.pollinations.ai/prompt/A%20realistic,%20wide-angle%20engineering%20visualization%20of%20a%20large-scale%20solar%20power%20plant%20project%20in%20an%20African%20savanna%20setting.%20The%20foreground%20features%20rows%20of%20modern%20photovoltaic%20panels%20glistening%20in%20the%20sun.%20In%20the%20middle%20distance,%20high-voltage%20transmission%20towers%20(132kV%20lattice%20steel%20towers)%20stretch%20across%20the%20landscape,%20connecting%20the%20solar%20farm%20to%20the%20horizon.%20The%20background%20shows%20a%20vast,%20open%20savanna%20with%20sparse%20acacia%20trees%20and%20a%20clear%20blue%20sky.%20The%20style%20should%20be%20professional,%20similar%20to%20an%20architectural%20rendering%20or%20infrastructure%20project%20photo,%20bright%20and%20clear.?width=1536&height=1024&nologo=true" alt="Project Visualization" class="w-full h-full object-cover">
                         <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-900/60 to-transparent p-2">
@@ -245,15 +415,15 @@
                         </div>
                     </div>
 
-                    <!-- 增加基准数据展示 -->
                     <div class="grid grid-cols-3 gap-2 mb-4 text-center">
                         <div class="bg-emerald-50 border border-emerald-100 p-2 rounded">
                             <div class="text-[10px] text-emerald-600 mb-0.5">初始利润</div>
                             <div class="text-sm font-bold text-emerald-800">1000万</div>
                         </div>
-                        <div class="bg-blue-50 border border-blue-100 p-2 rounded">
-                            <div class="text-[10px] text-blue-600 mb-0.5">预计工期</div>
-                            <div class="text-sm font-bold text-blue-800">12个月</div>
+                        <!-- 修改处：预计工期 -> 当前进度/合同工期 -->
+                        <div class="bg-blue-50 border border-blue-100 p-2 rounded col-span-1">
+                            <div class="text-[10px] text-blue-600 mb-0.5">当前进度/合同工期</div>
+                            <div class="text-sm font-bold text-blue-800">12个月 / 16个月</div>
                         </div>
                         <div class="bg-yellow-50 border border-yellow-100 p-2 rounded">
                             <div class="text-[10px] text-yellow-600 mb-0.5">初始声誉</div>
@@ -262,13 +432,10 @@
                     </div>
 
                     <div class="space-y-4 text-sm text-slate-700">
-                        <!-- 一、国家 -->
                         <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
                             <h4 class="font-bold text-slate-900 mb-1 text-xs uppercase text-blue-600">一、国家</h4>
                             <p class="text-xs">🌍 非洲某国</p>
                         </div>
-
-                        <!-- 二、项目范围 -->
                         <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
                             <h4 class="font-bold text-slate-900 mb-1 text-xs uppercase text-blue-600">二、项目范围</h4>
                             <ul class="list-disc pl-4 space-y-1 text-xs leading-relaxed">
@@ -277,8 +444,6 @@
                                 <li>扩建一座现有变电站，新增 132/220kV 主变及相关设备。</li>
                             </ul>
                         </div>
-
-                        <!-- 三、项目模式 -->
                         <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
                             <h4 class="font-bold text-slate-900 mb-1 text-xs uppercase text-blue-600">三、项目模式</h4>
                             <ul class="list-disc pl-4 space-y-1 text-xs leading-relaxed">
@@ -287,50 +452,40 @@
                                 <li class="text-red-700 bg-red-50 p-1 rounded font-bold">关键条款：合同工期16个月，误期损害赔偿费100万/月。</li>
                             </ul>
                         </div>
-
-                        <!-- 四、资金来源 -->
                         <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
                             <h4 class="font-bold text-slate-900 mb-1 text-xs uppercase text-blue-600">四、资金来源</h4>
                             <ul class="list-disc pl-4 space-y-1 text-xs leading-relaxed">
                                 <li><strong>世界银行（World Bank）</strong>通过 IBRD/IDA 贷款和担保等方式主导融资；</li>
-                                <li>项目适用世界银行<strong>《环境与社会框架》（ESF）</strong>及 10 项环境与社会标准（ESS）；</li>
-                                <li>初步评估为 <span class="bg-orange-100 text-orange-800 px-1 rounded font-bold">Substantial 风险等级</span>（环境与社会风险较高），需高质量 ESIA、ESMP 和 ESCP。</li>
+                                <li>项目适用世界银行<strong>《环境与社会框架》（ESF）</strong>及 10 项环境与社会标准（ESS）。</li>
+                                <!-- 修改3：删除“导致强制退场” -->
+                                <li class="text-red-600 font-bold bg-red-50 p-1 rounded mt-1">声誉红线：声誉分数低于 50 分将触发世行制裁。</li>
                             </ul>
                         </div>
-
-                        <!-- 五、背景信息 (精简版) -->
                         <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
                             <h4 class="font-bold text-slate-900 mb-1 text-xs uppercase text-blue-600">五、背景信息</h4>
                             <ul class="list-disc pl-4 space-y-2 text-[11px] leading-relaxed text-slate-600">
                                 <li><strong>生态环境：</strong>项目区域涉及多种野生动物栖息地及候鸟迁徙路线，生态敏感性不确定。</li>
                                 <li><strong>社会背景：</strong>征地涉及多个村庄，当地失业率较高，治安状况复杂，存在潜在社会矛盾。</li>
-                                <li><strong>过往经验：</strong>当地政府在征地补偿方面书面记录不足，曾有外资项目因劳工和补偿问题引发停工。</li>
-                                <li><strong>监管要求：</strong>世界银行ESF标准严格，但本地承包商和监管部门的合规意识相对薄弱。</li>
+                                <li><strong>监管要求：</strong>世界银行ESF标准严格，但本地法律要求和监管部门的合规意识不确定。</li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="fixed bottom-0 left-0 w-full p-4 bg-white/95 border-t border-slate-100 backdrop-blur-sm z-50 pb-safe-area">
-                <button onclick="goToContext()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">
-                    获取任务简报 ➡️
-                </button>
+            <div class="nav-footer">
+                <button class="btn-secondary" onclick="backToSurvey()">⬅️ 返回</button>
+                <button class="btn-primary" onclick="goToContext()" style="background-color: #2563eb;">获取任务 ➡️</button>
             </div>
         </div>
 
-        <!-- 2.5 随机情境分配 -->
+        <!-- 2.5 随机情境 (保持 v26) -->
         <div id="screen-context" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
             <div class="header-spacer"></div>
             <div class="px-6 pt-4 flex-1 overflow-y-auto pb-24">
                 <div class="flex flex-col items-center text-center">
                     <h2 class="text-xl font-bold text-slate-800 mb-2">正在随机生成实验环境...</h2>
                     <p class="text-sm text-slate-500 mb-4">系统将在 3×3 矩阵中为您分配<br>企业资源与项目环境</p>
-
-                    <!-- 9宫格动画容器 -->
-                    <div class="grid-box mb-6" id="random-grid">
-                        <!-- JS 生成 9 个格 -->
-                    </div>
-
+                    <div class="grid-box mb-6" id="random-grid"></div>
                     <div id="ctx-result-area" class="hidden flex-col items-center fade-in w-full">
                         <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl w-full shadow-sm mb-4">
                             <div class="text-2xl mb-1">🎲</div>
@@ -339,14 +494,12 @@
                         </div>
                     </div>
                     
-                    <!-- 逻辑说明 -->
                     <div class="bg-slate-100 p-2 rounded mb-4 text-[10px] text-slate-500 text-left leading-relaxed border border-slate-200">
                         <span class="font-bold text-slate-700">💡 逻辑说明：</span><br>
                         1. <span class="font-bold">资源越丰富</span>，企业ESG管理能力越强（如拥有专项资金和专家），能有效降低合规成本和负面影响。<br>
                         2. <span class="font-bold">项目越敏感</span>，各方关注度越高（如NGO、媒体），ESG管理不当被暴露的概率越高。
                     </div>
 
-                    <!-- 描述区 -->
                     <div class="w-full text-left space-y-1 border-t border-slate-100 pt-2">
                         <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">企业资源 (Resource) 说明</h3>
                         <div class="ctx-desc-card" id="desc-res-high">
@@ -378,32 +531,27 @@
                     </div>
                 </div>
             </div>
-            <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30 pb-safe-area hidden" id="btn-start-matrix">
-                <button onclick="goToMatrix()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl shadow-lg">
-                    查看应对策略集 ➡️
-                </button>
+            <div class="nav-footer hidden" id="btn-start-matrix">
+                <button class="btn-secondary" onclick="backToBriefing()">⬅️ 返回</button>
+                <button class="btn-primary" onclick="goToMatrix()" style="background-color: #1e293b;">查看策略 ➡️</button>
             </div>
         </div>
 
-        <!-- 2.6 策略矩阵展示 -->
+        <!-- 2.6 策略矩阵 (保持 v26) -->
         <div id="screen-matrix" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
             <div class="header-spacer"></div>
             <div class="px-4 pt-2 flex-1 overflow-y-auto pb-32">
                 <h2 class="text-lg font-bold text-slate-800 mb-2">SunLink ESG 响应策略表</h2>
                 <p class="text-xs text-slate-500 mb-2">基于您的分配（<span id="user-ctx-summary" class="font-bold text-blue-600"></span>），不同策略的后果如下：</p>
-                <div class="bg-slate-50 p-2 mb-3 rounded border border-slate-200 text-[10px] text-slate-600 text-center">
-                    <span class="font-bold">基准值：</span>利润 1000.00万 | 工期 12.00月 (逾期>16月罚款) | 声誉 100.00
-                </div>
                 
                 <div class="overflow-x-auto border border-slate-200 rounded shadow-sm">
-                    <div id="matrix-container"></div> <!-- JS 生成表格 -->
+                    <div id="matrix-container"></div> 
                 </div>
                 <p class="text-[10px] text-slate-400 mt-2 italic text-center">*表格中高亮列为您当前的资源条件，高亮文字为您当前的敏感度概率</p>
             </div>
-            <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30 pb-safe-area">
-                <button onclick="startGame()" class="w-full bg-red-600 hover:bg-red-700 text-white text-lg font-bold py-3 rounded-xl shadow-lg">
-                    进入现场处理危机 ➡️
-                </button>
+            <div class="nav-footer">
+                <button class="btn-secondary" onclick="backToContext()">⬅️ 返回</button>
+                <button class="btn-primary" onclick="startGame()" style="background-color: #dc2626;">进入危机 ➡️</button>
             </div>
         </div>
 
@@ -411,11 +559,31 @@
         <div id="screen-game" class="hidden flex-col h-full fade-in absolute inset-0 z-10 bg-white">
             <div class="header-spacer"></div>
             <div class="flex-1 overflow-y-auto scroll-smooth pb-32 px-4 pt-2">
+                
+                <!-- 动态实验组警示条 -->
+                <div id="dynamic-warning" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-3 rounded mb-4 text-xs flex items-center gap-2 shadow-md animate-pulse">
+                    <span class="text-2xl">⚠️</span>
+                    <div>
+                        <div class="font-black text-base">监管升级警告</div>
+                        <div class="font-bold" id="dynamic-msg-content">项目已被重点关注！暴露概率与代价已上浮 X%！</div>
+                    </div>
+                </div>
+
                 <span id="event-tag" class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded mb-2 inline-block tracking-wide">TAG</span>
                 <h3 id="event-title" class="text-2xl font-black text-slate-900 mb-4 leading-snug mt-1">Title</h3>
-                <div class="text-sm text-slate-700 leading-relaxed space-y-2 pb-4 mb-4 border-l-4 border-yellow-400 pl-3 bg-yellow-50 p-3 rounded-r border-y border-r border-yellow-100" id="event-desc"></div>
+                <div class="text-sm text-slate-700 leading-relaxed space-y-2 pb-4 mb-4 border-l-4 border-yellow-400 pl-3 bg-yellow-50 p-3 rounded-r border-y border-r border-yellow-100">
+                     <div id="event-desc"></div>
+                     <!-- 情境化时间压力插入点 (仅在逻辑中触发，UI上不显示红色警告文字了) -->
+                     <div id="contextual-time-pressure" class="hidden mt-2 pt-2 border-t border-yellow-200 text-red-600 font-bold animate-pulse">
+                     </div>
+                </div>
                 <div class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">请做出决策：</div>
                 <div id="options-container" class="grid gap-3 pb-10"></div>
+            </div>
+            
+             <div class="nav-footer hidden" id="game-back-container">
+                <button class="btn-secondary" onclick="backFromGame()">⬅️ 返回</button>
+                <button class="btn-primary disabled" style="opacity:0.3; cursor:default;">请选择上方选项</button>
             </div>
         </div>
 
@@ -448,28 +616,22 @@
                     </div>
                 </div>
             </div>
-            <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-safe-area">
-                <button onclick="nextLevel()" id="btn-next-level" class="w-full bg-slate-800 active:bg-slate-900 text-white font-bold py-3 rounded-xl shadow-md transition">
-                    下一事件 ➡️
-                </button>
+            <div class="nav-footer">
+                <button class="btn-secondary" onclick="alert('落子无悔，决策结果已生成，无法撤销。')">⬅️ 返回</button>
+                <button onclick="nextLevel()" id="btn-next-level" class="btn-primary" style="background-color: #1e293b;">下一事件 ➡️</button>
             </div>
         </div>
 
-        <!-- 6. 完工报告 -->
+        <!-- 6. 完工报告 (保持 v26) -->
         <div id="screen-end" class="hidden absolute inset-0 z-20 flex flex-col items-center bg-white fade-in">
-            
-            <!-- 顶部添加 SunLink 文字图标 -->
-            <div class="pt-4 pb-2 px-6 flex justify-center items-center border-b border-slate-100 bg-white z-10 flex-none w-full">
+             <div class="pt-4 pb-2 px-6 flex justify-center items-center border-b border-slate-100 bg-white z-10 flex-none w-full">
                  <div class="text-2xl mr-2">🌍</div>
                  <div class="font-black text-xl tracking-tight text-slate-800">SunLink <span class="text-blue-600">ESG</span></div>
             </div>
-
             <div class="flex-1 overflow-y-auto w-full flex flex-col items-center pb-40">
-                
                 <div class="px-6 pt-2 w-full flex flex-col items-center">
                     <div id="end-icon" class="text-6xl mt-2 mb-4">🏆</div>
                     <h2 class="text-2xl font-bold text-slate-800 mb-4">完工报告</h2>
-
                     <div class="grid grid-cols-3 gap-2 w-full mb-6">
                         <div class="bg-slate-50 p-3 rounded border text-center">
                             <div class="text-[10px] text-slate-500 mb-1">最终利润</div>
@@ -486,8 +648,7 @@
                         </div>
                     </div>
 
-                    <div id="end-feedback" class="text-sm bg-white border border-slate-200 p-4 rounded-xl shadow-sm w-full mb-6 text-slate-700 leading-relaxed"></div>
-
+                    <!-- 对比表 (先显示) -->
                     <div class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6">
                         <p class="text-sm font-bold text-slate-800 mb-2 border-l-4 border-indigo-500 pl-2">📊 决策路径对比分析</p>
                         <div id="loading-stats" class="text-xs text-blue-500 animate-pulse mb-2 hidden">正在同步云端学员数据...</div>
@@ -527,7 +688,7 @@
                                     <td id="bench-luck-rep">100.00</td>
                                 </tr>
                                 <tr class="bg-red-100 text-red-800 font-medium">
-                                    <td title="低资源企业，所有选A且暴露">最狼狈情况</td>
+                                    <td title="低资源企业，所有选A且暴露">最糟糕情况</td> <!-- 修改1：最狼狈 -> 最糟糕 -->
                                     <td id="bench-worst-budget">40.00</td>
                                     <td id="bench-worst-schedule">21.60</td>
                                     <td id="bench-worst-rep">-20.00</td>
@@ -539,29 +700,29 @@
                         </div>
                     </div>
 
+                    <!-- 点评 (后显示) -->
+                    <div id="end-feedback" class="text-sm bg-white border border-slate-200 p-4 rounded-xl shadow-sm w-full mb-6 text-slate-700 leading-relaxed"></div>
+
+                    <!-- 思考题 (v26) -->
                     <div class="w-full bg-blue-50/50 p-4 rounded-xl border border-blue-100 mb-6">
                         <p class="text-sm font-bold text-blue-800 mb-2">🤔 思考与讨论</p>
                         <p class="text-sm text-slate-600 leading-relaxed">
-                            对于国际工程 ESG 管理，经历了这个项目的种种挑战后，通过上面的对比，你有何感想？欢迎与身边的同事交流。
+                            <!-- 修改1：文本修正 -->
+                            对于国际工程 ESG 管理，经历了这个项目的种种挑战后，通过上面的对比，您有何感想？欢迎与同事或天津大学全球工程经营实验室交流。
                         </p>
                     </div>
 
-                    <!-- 补充回来的联系方式 -->
                     <div class="mt-4 w-full text-center">
                         <p class="text-xs text-slate-400 font-medium">开发单位</p>
                         <p class="text-xs text-slate-600 font-bold mb-4">天津大学全球工程经营实验室</p>
-                        
                         <p class="text-xs text-slate-400 font-medium">联系人</p>
                         <p class="text-xs text-slate-600 font-bold mb-2">傅老师 yongcheng_fu@126.com</p>
-                        
                         <div class="copyright-text">© 2025 Tianjin University GIPC. All Rights Reserved.</div>
                     </div>
                 </div>
             </div>
             <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30 pb-safe-area">
-                <button onclick="location.reload()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg">
-                    再试一次
-                </button>
+                <button onclick="location.reload()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg">再试一次</button>
             </div>
         </div>
 
@@ -578,6 +739,12 @@
             resource: 'mid',    
             sensitivity: 'mid'  
         };
+        let hasContextGenerated = false;
+
+        // 实验组分配：Static (0) vs Dynamic (1)
+        let experimentGroup = Math.random() < 0.5 ? 'static' : 'dynamic'; 
+        let dynamicMultiplier = 1.0; // 累乘系数
+        let dynamicProbAdder = 0.0;  // 概率加成
 
         // --- 核心状态变量 ---
         let gameState = { 
@@ -588,17 +755,27 @@
         };
         
         let userProfile = {
+            // 基础分数
             esgScore: 0,
             riskScore: 0,
+            moralScore: 0, 
+            timeScore: 0,
+            
+            // 人口统计
+            gender: "",
+            age: "",
+            major: "",
+            role_pm: "",
+            role_hse: "",
+            exp_neg: "",
+            
             surveyData: {}
         };
         
-        // 保存当前会话的 objectId，用于在计算平均值时排除自己
         let currentSessionId = null;
-
         let decisionPath = []; 
 
-        // --- LeanCloud Config (Raw REST API) ---
+        // --- LeanCloud Config ---
         const LC_APP_ID = "esL6o1jmpB3rVGlkjsE6OFRu-MdYXbMMI";
         const LC_APP_KEY = "B1fDIAC8C2dXizdlslG7Cl1D";
         const LC_API_URL = "https://esl6o1jm.api.lncldglobal.com/1.1/classes/GameResult";
@@ -613,11 +790,7 @@
                 }
             },
             B: { 
-                prob: { 
-                    high: 0.5, 
-                    mid: 0.4,
-                    low: 0.3
-                },
+                prob: { high: 0.5, mid: 0.4, low: 0.3 },
                 fail: { 
                     high: { b: -104, s: 1.04, r: -8 },
                     mid:  { b: -130, s: 1.3, r: -10 },
@@ -630,11 +803,7 @@
                 }
             },
             A: { 
-                prob: { 
-                    high: 0.7,
-                    mid: 0.6,
-                    low: 0.5
-                },
+                prob: { high: 0.7, mid: 0.6, low: 0.5 },
                 fail: {
                     high: { b: -128, s: 1.28, r: -16 },
                     mid:  { b: -160, s: 1.6, r: -20 },
@@ -661,7 +830,8 @@
             },
             {
                 id: 2, tag: "ESS2 劳工条件", title: "危机事件2：沉默的工人",
-                desc: "<strong>【事件描述】</strong><br>分包商为抢雨季前的工期实行“大干100天”，工人每日工作13小时以上。且为了方便“统一调度”，分包商安排所有工人挤在现场周边的临时板房里，卫生条件恶劣，垃圾堆积，异味刺鼻。有工人私下抱怨“像住猪圈一样”，但工头称大家都是来挣钱的，忍忍就过去了。",
+                // 修改1：文本优化，“且为了方便“统一调度”” -> “为了统一调度”
+                desc: "<strong>【事件描述】</strong><br>分包商为抢雨季前的工期实行“大干100天”，工人每日工作10小时以上，且没有周末休息。为了统一调度，分包商安排所有工人挤在现场周边的临时板房里，卫生条件恶劣，垃圾堆积，异味刺鼻。",
                 options: [
                     { type: "A", text: "这是当地常态。只要按时发工资，工人为了赚钱是愿意吃苦的。让工头稍微注意一下垃圾清理，不要影响现场观感即可。", riskRole: "疫情爆发", riskMsg: "恶劣的卫生条件导致传染病在营地爆发，大批工人病倒。世行介入调查发现工时和居住环境严重违规。", luckyMsg: "虽然环境差了点，但大家为了加班费都忍了下来，工程进度保住了。", learning: "忽视基本的生活和工作条件（ESS2）不仅不人道，更是巨大的运营风险。" },
                     { type: "B", text: "环境太差容易滋生疾病。立即拨款改善宿舍卫生，加装风扇。至于加班，只要工人不公开抗议，为了节点只能先维持现状。", riskRole: "工会抗议", riskMsg: "改善住宿没能平息过度劳累的怨气。工会组织罢工，要求支付巨额加班费和健康赔偿。", luckyMsg: "住宿改善让工人心情好了一些，勉强维持着高强度工作直到节点。", learning: "小恩小惠无法掩盖系统性的劳动剥削，过度加班也是严重的合规问题。" },
@@ -670,7 +840,8 @@
             },
             {
                 id: 3, tag: "ESS8 文化遗产", title: "危机事件3：神树拦路",
-                desc: "<strong>【事件描述】</strong><br>光伏场区平整土地时，推土机被村民拦下。场区中心有一棵看似普通的巨大的猴面包树。设计图纸上显示必须铲除，否则会遮挡两排组件，影响发电量。但村民坚称这是**“祖先栖息的神树”**，绝对不能动。",
+                // 修改5：去掉祖先栖息的神树周围多余的星号
+                desc: "<strong>【事件描述】</strong><br>光伏场区平整土地时，推土机被村民拦下。场区中心有一棵看似普通的巨大的猴面包树。设计图纸上显示必须铲除，否则会遮挡两排组件，影响发电量。但村民坚称这是“祖先栖息的神树”，绝对不能动。",
                 options: [
                     { type: "A", text: "没有什么是钱解决不了的。找村长私下谈，给村集体一笔‘祭祀费’，让我们明天把它砍了。", riskRole: "反腐机构", riskMsg: "村长私吞钱财引发暴动。这笔钱被定性为商业贿赂。", luckyMsg: "村长搞定了村民。树没了，耳根清净了。", learning: "不要试图用金钱买断文化信仰，这涉及严重的道德风险。" },
                     { type: "B", text: "这树不在官方保护名录里，土地我们也已经征下来了。夜间施工，把它推倒，造成既定事实。", riskRole: "世行红牌", riskMsg: "破坏文化遗产是世行红线。项目面临贷款取消风险。", luckyMsg: "树倒了，村民虽然骂，但没闹出大事。", learning: "尊重社区认定的文化价值，是获得‘社会许可’的前提。" },
@@ -687,9 +858,8 @@
                 ]
             },
             {
-                // 修改 TAG
                 id: 5, tag: "ESS5 土地征用和非自愿移民", title: "危机事件5：看不见的“邻居”",
-                desc: "<strong>【事件描述】</strong><br>在项目外围的一片荒地上，你们计划建设临时堆料场。土地权属显示这是“国有荒地”，手续齐全。但进场时发现，有几个游牧家庭（无固定居所）正在这里临时搭帐篷放牧。他们没有土地证，但声称这里是他们百年的季节性牧场。",
+                desc: "<strong>【事件描述】</strong><br>在项目外围的一片荒地上，你们计划建设临时堆料场。土地权属显示这是“国有荒地”，手续齐全。但进场时发现，有几个游牧家庭（无固定居所）正在这里临时搭帐篷放牧。",
                 options: [
                     { type: "A", text: "这是国有土地，我们有证。通知警察和政府，请他们依法离开。", riskRole: "人权观察", riskMsg: "强驱视频被曝光。ESS5 保护无证的传统使用者，你们严重违规。", luckyMsg: "他们看对方人多势众，吓跑了。", learning: "土地证不是唯一依据，生计和传统权益必须被尊重。" },
                     { type: "B", text: "给点米面油和少许现金，劝他们去别的地方。", riskRole: "NGO", riskMsg: "NGO 指控你们利用贫穷进行剥削。补偿必须基于重置成本。", luckyMsg: "他们拿了点钱，搬到了几公里外。", learning: "非正式的施舍无法解决根本的生计恢复问题。" },
@@ -703,21 +873,63 @@
             return n.toFixed(2);
         }
 
+        // --- 返回上一页逻辑 ---
+        function backToStart() {
+            document.getElementById('screen-survey').classList.add('hidden');
+            document.getElementById('screen-survey').classList.remove('flex');
+            document.getElementById('screen-start').classList.remove('hidden');
+        }
+
+        function backToSurvey() {
+            document.getElementById('main-header').classList.add('hidden');
+            document.getElementById('screen-briefing').classList.add('hidden');
+            document.getElementById('screen-briefing').classList.remove('flex');
+            document.getElementById('screen-survey').classList.remove('hidden');
+            document.getElementById('screen-survey').classList.add('flex');
+        }
+
+        function backToBriefing() {
+            document.getElementById('screen-context').classList.add('hidden');
+            document.getElementById('screen-context').classList.remove('flex');
+            document.getElementById('screen-briefing').classList.remove('hidden');
+            document.getElementById('screen-briefing').classList.add('flex');
+        }
+
+        function backToContext() {
+            document.getElementById('screen-matrix').classList.add('hidden');
+            document.getElementById('screen-matrix').classList.remove('flex');
+            document.getElementById('screen-context').classList.remove('hidden');
+            document.getElementById('screen-context').classList.add('flex');
+        }
+        
+        function backFromGame() {
+            if(gameState.currentLevel === 0) {
+                document.getElementById('screen-game').classList.add('hidden');
+                document.getElementById('screen-game').classList.remove('flex');
+                document.getElementById('screen-matrix').classList.remove('hidden');
+                document.getElementById('screen-matrix').classList.add('flex');
+            } else {
+                alert("已进入后续关卡，为保证模拟真实性，不可退回上一关。");
+            }
+        }
+
         // --- 问卷逻辑 ---
         function goToSurvey() {
             document.getElementById('screen-start').classList.add('hidden');
             document.getElementById('screen-survey').classList.remove('hidden');
             document.getElementById('screen-survey').classList.add('flex');
             renderLikertScales();
+            updateUI(); // 初始化顶部状态栏
         }
 
         function renderLikertScales() {
+            if(document.querySelector('.likert-opt')) return;
+            
             const scales = document.querySelectorAll('.likert-scale');
             scales.forEach(el => {
                 const name = el.dataset.name;
                 for(let i=1; i<=5; i++) {
                     let label = "";
-                    // 修改文案：非常 -> 完全
                     if(i===1) label = "完全<br>不同意";
                     if(i===2) label = "不同意";
                     if(i===3) label = "中立";
@@ -738,24 +950,93 @@
             const parent = el.parentElement;
             Array.from(parent.children).forEach(child => child.classList.remove('selected'));
             el.classList.add('selected');
-            checkSurveyComplete();
+            parent.classList.remove('scroll-highlight'); // 移除高亮
         }
 
-        function checkSurveyComplete() {
-            const count = Object.keys(userProfile.surveyData).length;
-            const btn = document.getElementById('btn-survey');
-            if(count >= 6) {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                btn.classList.add('active:scale-95');
+        // 单选框辅助函数
+        function selectRadio(el, field, val) {
+            const group = el.parentElement;
+            const inputs = document.querySelectorAll(`input[name="${field}"]`);
+            inputs.forEach(input => {
+                input.parentElement.classList.remove('checked');
+            });
+            el.classList.add('checked');
+            userProfile[field] = val;
+            el.closest('.form-group').classList.remove('scroll-highlight'); // 移除高亮
+        }
+
+        // 监听 Select 变化移除高亮
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('form-select')) {
+                userProfile[e.target.dataset.field] = e.target.value;
+                if(e.target.value) {
+                    e.target.closest('.form-group').classList.remove('scroll-highlight');
+                }
             }
+        });
+
+        function validateAndSubmit() {
+            // 收集当前数据
+            const d = userProfile.surveyData;
+            
+            // 定义所有需要检查的字段ID
+            const checks = [
+                { id: 'q-gender', val: userProfile.gender },
+                { id: 'q-age', val: userProfile.age },
+                { id: 'q-major', val: userProfile.major },
+                { id: 'q-pm', val: userProfile.role_pm },
+                { id: 'q-hse', val: userProfile.role_hse },
+                { id: 'q-exp', val: userProfile.exp_neg },
+                { id: 'q-moral1', val: d.moral1 },
+                { id: 'q-moral2', val: d.moral2 },
+                { id: 'q-moral3', val: d.moral3 },
+                { id: 'q-time1', val: d.time1 },
+                { id: 'q-time2', val: d.time2 },
+                { id: 'q-time3', val: d.time3 },
+                { id: 'q-esg1', val: d.esg1 },
+                { id: 'q-esg2', val: d.esg2 },
+                { id: 'q-esg3', val: d.esg3 },
+                { id: 'q-risk1', val: d.risk1 },
+                { id: 'q-risk2', val: d.risk2 },
+                { id: 'q-risk3', val: d.risk3 },
+            ];
+
+            let firstErrorId = null;
+
+            // 清除旧的高亮
+            document.querySelectorAll('.scroll-highlight').forEach(el => el.classList.remove('scroll-highlight'));
+
+            checks.forEach(item => {
+                if (!item.val) {
+                    const el = document.getElementById(item.id);
+                    if(el) {
+                        el.classList.add('scroll-highlight');
+                        if(!firstErrorId) firstErrorId = item.id;
+                    }
+                }
+            });
+
+            if (firstErrorId) {
+                // 滚动到第一个错误
+                const errorEl = document.getElementById(firstErrorId);
+                errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // 可以加个震动或者提示
+                return;
+            }
+
+            submitSurvey();
         }
 
         function submitSurvey(e) {
             if(e) e.preventDefault();
             const d = userProfile.surveyData;
+            
+            // 计算各维度分数
             userProfile.esgScore = ((6 - d.esg1) + (6 - d.esg2) + d.esg3) / 3; 
             userProfile.riskScore = (d.risk1 + d.risk2 + (6 - d.risk3)) / 3;
+            userProfile.moralScore = (d.moral1 + d.moral2 + d.moral3) / 3;
+            userProfile.timeScore = (d.time1 + d.time2 + (6 - d.time3)) / 3;
+            
             goToBriefing();
         }
 
@@ -763,10 +1044,7 @@
         function goToBriefing() {
             document.getElementById('screen-survey').classList.add('hidden');
             document.getElementById('screen-survey').classList.remove('flex');
-            
-            // 进入Briefing时，显示Header
             document.getElementById('main-header').classList.remove('hidden');
-            
             document.getElementById('screen-briefing').classList.remove('hidden');
             document.getElementById('screen-briefing').classList.add('flex');
         }
@@ -776,63 +1054,74 @@
             document.getElementById('screen-briefing').classList.remove('flex');
             document.getElementById('screen-context').classList.remove('hidden');
             document.getElementById('screen-context').classList.add('flex');
-            runContextAnimation();
+            if (!hasContextGenerated) {
+                runContextAnimation();
+            } else {
+                showSavedContext();
+            }
         }
 
-        // --- 九宫格动画 ---
+        // --- 九宫格动画 & 逻辑 ---
         function runContextAnimation() {
+            document.getElementById('btn-start-matrix').classList.add('hidden');
+            document.getElementById('btn-start-matrix').classList.remove('flex');
             const grid = document.getElementById('random-grid');
             grid.innerHTML = '';
-            
             const resList = ['low', 'mid', 'high'];
             const senList = ['low', 'mid', 'high'];
             const combinations = [];
-            
-            resList.forEach(r => {
-                senList.forEach(s => {
-                    combinations.push({ r, s });
-                });
-            });
-            
+            resList.forEach(r => { senList.forEach(s => { combinations.push({ r, s }); }); });
             combinations.forEach((c, idx) => {
                 const el = document.createElement('div');
                 el.className = `grid-cell grid-cell-${idx}`;
-                el.innerHTML = `
-                    <div class="grid-cell-text">${getResDescShort(c.r)}</div>
-                    <div class="grid-cell-sub">+${getSenDescShort(c.s)}</div>
-                `;
+                el.innerHTML = `<div class="grid-cell-text">${getResDescShort(c.r)}</div><div class="grid-cell-sub">+${getSenDescShort(c.s)}</div>`;
                 grid.appendChild(el);
             });
-
             globalContext.resource = resList[Math.floor(Math.random() * 3)];
             globalContext.sensitivity = senList[Math.floor(Math.random() * 3)];
             const targetIndex = combinations.findIndex(c => c.r === globalContext.resource && c.s === globalContext.sensitivity);
-
             let jumps = 0;
             let currentHighlight = 0;
             const maxJumps = 15 + Math.floor(Math.random() * 5);
             const cells = document.querySelectorAll('.grid-cell');
-            
             const interval = setInterval(() => {
                 cells.forEach(c => c.classList.remove('active'));
                 currentHighlight = (currentHighlight + 1) % 9;
                 cells[currentHighlight].classList.add('active');
                 jumps++;
-
                 if (jumps > maxJumps && currentHighlight === targetIndex) {
                     clearInterval(interval);
+                    hasContextGenerated = true;
                     setTimeout(showContextResult, 500);
                 }
             }, 100);
         }
 
+        function showSavedContext() {
+             const grid = document.getElementById('random-grid');
+            grid.innerHTML = '';
+            const resList = ['low', 'mid', 'high'];
+            const senList = ['low', 'mid', 'high'];
+            const combinations = [];
+            resList.forEach(r => { senList.forEach(s => { combinations.push({ r, s }); }); });
+            const targetIndex = combinations.findIndex(c => c.r === globalContext.resource && c.s === globalContext.sensitivity);
+            combinations.forEach((c, idx) => {
+                const el = document.createElement('div');
+                el.className = `grid-cell ${idx === targetIndex ? 'active' : ''}`;
+                if (idx === targetIndex) el.style.opacity = 1;
+                el.innerHTML = `<div class="grid-cell-text">${getResDescShort(c.r)}</div><div class="grid-cell-sub">+${getSenDescShort(c.s)}</div>`;
+                grid.appendChild(el);
+            });
+            showContextResult();
+        }
+
         function showContextResult() {
-            document.getElementById('btn-start-matrix').classList.remove('hidden');
+            const footer = document.getElementById('btn-start-matrix');
+            footer.classList.remove('hidden');
+            footer.classList.add('flex');
             document.getElementById('ctx-result-area').classList.remove('hidden');
             document.getElementById('ctx-result-area').classList.add('flex');
-            
             document.getElementById('final-ctx-text').innerText = `${getResDescShort(globalContext.resource)} + ${getSenDescShort(globalContext.sensitivity)}`;
-            
             document.querySelectorAll('.ctx-desc-card').forEach(el => el.classList.remove('highlighted'));
             document.getElementById(`desc-res-${globalContext.resource}`).classList.add('highlighted');
             document.getElementById(`desc-sen-${globalContext.sensitivity}`).classList.add('highlighted');
@@ -849,16 +1138,6 @@
             renderMatrix();
         }
 
-        // 辅助函数：根据当前敏感度生成高亮概率文本
-        function highlightProb(targetSen, text) {
-            // text 格式示例 "低敏感30% | 中敏感40% | 高敏感50%"
-            if (globalContext.sensitivity === targetSen) {
-                return `<span class="prob-highlight">${text}</span>`;
-            }
-            return text;
-        }
-        
-        // 全局辅助：拆解并重建概率字符串，实现精准高亮
         function buildProbString(lowText, midText, highText) {
             const s = globalContext.sensitivity;
             const t1 = s === 'low' ? `<span class="prob-highlight">${lowText}</span>` : lowText;
@@ -869,8 +1148,6 @@
 
         function renderMatrix() {
             const r = globalContext.resource;
-            // const s = globalContext.sensitivity; // 不需要直接用，用辅助函数
-            
             document.getElementById('user-ctx-summary').innerText = `${getResDescShort(r)} + ${getSenDescShort(globalContext.sensitivity)}`;
             
             let html = `
@@ -898,7 +1175,6 @@
                     <tbody>
             `;
 
-            // Row C
             html += `
                 <tr>
                     <td class="font-bold text-blue-600">C 合规</td>
@@ -914,8 +1190,6 @@
                     <td class="${r==='high'?'matrix-highlight':''}">+12</td>
                 </tr>
             `;
-
-            // Row B
             html += `
                 <tr>
                     <td rowspan="3" class="font-bold text-yellow-600">B 妥协</td>
@@ -948,8 +1222,6 @@
                     <td class="${r==='high'?'matrix-highlight':''}">-8</td>
                 </tr>
             `;
-
-            // Row A
             html += `
                 <tr>
                     <td rowspan="3" class="font-bold text-red-600">A 逃避</td>
@@ -990,44 +1262,50 @@
         // --- 游戏核心逻辑 ---
 
         function startGame() {
-            gameState = { 
-                budget: 1000, 
-                schedule: 12.0, 
-                reputation: 100, 
-                currentLevel: 0 
-            };
+            gameState = { budget: 1000, schedule: 12.0, reputation: 100, currentLevel: 0 };
             decisionPath = [];
-
+            dynamicMultiplier = 1.0; // 重置系数
+            dynamicProbAdder = 0.0; // 重置概率
             updateUI();
-            
             document.getElementById('screen-matrix').classList.add('hidden');
             document.getElementById('screen-matrix').classList.remove('flex');
             document.getElementById('screen-game').classList.remove('hidden');
             document.getElementById('screen-game').classList.add('flex');
-            
+            document.getElementById('game-back-container').classList.remove('hidden');
+            document.getElementById('game-back-container').classList.add('flex');
             loadLevel(0);
         }
 
         function loadLevel(index) {
-            if (index >= gameData.length) {
-                endGame();
-                return;
+            if (index >= gameData.length) { endGame(); return; }
+            if(index > 0) {
+                 document.getElementById('game-back-container').classList.add('hidden');
+                 document.getElementById('game-back-container').classList.remove('flex');
             }
-            
             gameState.currentLevel = index;
             const data = gameData[index];
-            
             document.getElementById('screen-result').classList.add('hidden');
             document.getElementById('screen-result').classList.remove('flex');
             document.getElementById('screen-game').classList.remove('hidden');
             document.getElementById('screen-game').classList.add('flex');
+            document.querySelector('#screen-game .overflow-y-auto').scrollTop = 0;
 
-            const scrollArea = document.querySelector('#screen-game .overflow-y-auto');
-            if(scrollArea) scrollArea.scrollTop = 0;
+            // 更新顶部状态栏
+            updateUI(); 
+
+            // 动态组警告逻辑 (累进式)
+            const warningEl = document.getElementById('dynamic-warning');
+            const warningMsg = document.getElementById('dynamic-msg-content');
+            if (experimentGroup === 'dynamic' && dynamicMultiplier > 1.0) {
+                warningEl.classList.remove('hidden');
+                const increasePct = Math.round((dynamicMultiplier - 1.0) * 100);
+                warningMsg.innerText = `项目已被重点关注！暴露概率与代价已上浮 ${increasePct}%！`;
+            } else {
+                warningEl.classList.add('hidden');
+            }
 
             const btnNext = document.getElementById('btn-next-level');
             btnNext.onclick = null;
-
             if(index === 4) {
                 btnNext.innerText = "查看最终结果 🏁";
                 btnNext.onclick = function() { endGame(); };
@@ -1038,27 +1316,51 @@
 
             document.getElementById('level-indicator').innerText = `Level ${index + 1}/5`;
             document.getElementById('progress-bar').style.width = `${(index / gameData.length) * 100}%`;
-            
             document.getElementById('event-tag').innerText = data.tag;
             document.getElementById('event-title').innerText = data.title;
             document.getElementById('event-desc').innerHTML = data.desc;
 
+            // 情境化时间压力 (仅逻辑，不显示警告)
+            const timePressureEl = document.getElementById('contextual-time-pressure');
+            timePressureEl.classList.add('hidden');
+            timePressureEl.innerHTML = ''; // 清空内容
+            
+            if (index >= 3) {
+                // 仅保留逻辑检查点，如果未来需要恢复功能
+                if (gameState.schedule > 14.5) {
+                   // hidden 保持
+                }
+            }
+
             const container = document.getElementById('options-container');
             container.innerHTML = ''; 
             
+            // 强耦合 UI 样式准备
+            let budgetStyle = "";
+            let repStyle = "";
+            if (userProfile.timeScore <= 2) budgetStyle = "highlight-short-term"; 
+            if (userProfile.timeScore >= 4) repStyle = "highlight-long-term";
+
+            // 预先计算所有选项的当前数据，以便记录和显示
+            const currentOptionsData = {};
+            ['A', 'B', 'C'].forEach(type => {
+                currentOptionsData[type] = calculateOptionImpact(type);
+            });
+
             data.options.forEach((opt) => {
-                const calc = calculateOptionImpact(opt.type);
-                
+                const calc = currentOptionsData[opt.type];
                 const btn = document.createElement('button');
                 btn.className = "relative w-full text-left bg-white border border-slate-200 rounded-xl p-3 shadow-sm active:bg-slate-50 active:scale-[0.98] transition-all duration-100";
-                btn.onclick = () => handleDecision(opt, calc);
+                
+                // 修改3：传递完整的 currentOptionsData 给 handleDecision
+                btn.onclick = () => handleDecision(opt, calc, currentOptionsData);
 
                 let riskLabel = "";
                 let costPreview = "";
                 
                 if (opt.type === 'C') {
                     riskLabel = `<span class="text-[10px] px-2 py-0.5 rounded-full font-medium text-blue-600 bg-blue-50 border border-blue-100">安全合规</span>`;
-                    costPreview = `<span class='text-blue-600'>固定结果: 利润${fmt(calc.c.b)} | 工期+${fmt(calc.c.s)} | 声誉+${fmt(calc.c.r)}</span>`;
+                    costPreview = `<span class='text-blue-600'>固定结果: <span class="${budgetStyle}">利润${fmt(calc.c.b)}</span> | 工期+${fmt(calc.c.s)} | <span class="${repStyle}">声誉+${fmt(calc.c.r)}</span></span>`;
                 } else {
                     const probPct = (calc.prob * 100).toFixed(0);
                     const riskColor = opt.type === 'A' ? 'text-red-600 bg-red-50 border-red-100' : 'text-yellow-600 bg-yellow-50 border-yellow-100';
@@ -1066,8 +1368,8 @@
                     riskLabel = `<span class="text-[10px] px-2 py-0.5 rounded-full font-medium ${riskColor} border">${labelText}</span>`;
                     
                     costPreview = `
-                        <span class='text-slate-500'>${100-probPct}% 未暴露: 利润${fmt(calc.success.b)} | 工期+${fmt(calc.success.s)}</span><br>
-                        <span class='text-red-600'>${probPct}% 暴露: 利润${fmt(calc.fail.b)} | 工期+${fmt(calc.fail.s)} | 声誉${fmt(calc.fail.r)}</span>
+                        <span class='text-slate-500'>${100-probPct}% 未暴露: <span class="${budgetStyle}">利润${fmt(calc.success.b)}</span> | 工期+${fmt(calc.success.s)}</span><br>
+                        <span class='text-red-600'>${probPct}% 暴露: <span class="${budgetStyle}">利润${fmt(calc.fail.b)}</span> | 工期+${fmt(calc.fail.s)} | <span class="${repStyle}">声誉${fmt(calc.fail.r)}</span></span>
                     `;
                 }
 
@@ -1089,20 +1391,53 @@
             const r = globalContext.resource;
             const s = globalContext.sensitivity;
             
+            // 动态实验组：使用全局累乘系数
+            let probMod = 0;
+            let costFactor = 1.0;
+
+            if (experimentGroup === 'dynamic') {
+                probMod = dynamicProbAdder;
+                costFactor = dynamicMultiplier;
+            }
+
             if (type === 'C') {
                 return { c: STRATEGY_LOGIC.C.cost[r] };
             } else {
                 const logic = STRATEGY_LOGIC[type];
+                let baseProb = logic.prob[s];
+                let finalProb = Math.min(baseProb + probMod, 1.0); // 封顶100%
+                
+                // 只有失败（暴露）的代价会增加
+                const failRaw = logic.fail[r];
+                const failAdjusted = {
+                    b: failRaw.b * costFactor,
+                    s: failRaw.s * costFactor,
+                    r: failRaw.r * costFactor
+                };
+
                 return {
-                    prob: logic.prob[s],
-                    fail: logic.fail[r],
+                    prob: finalProb,
+                    fail: failAdjusted,
                     success: logic.success[r]
                 };
             }
         }
 
-        function handleDecision(opt, calc) {
-            decisionPath.push({ level: gameState.currentLevel, type: opt.type, exposed: false });
+        function handleDecision(opt, calc, allOptionsCalc) {
+            // 修改3：记录决策时的当前状态 + 所有选项的具体参数
+            decisionPath.push({ 
+                level: gameState.currentLevel, 
+                type: opt.type, 
+                exposed: false,
+                // 快照当前状态 (决策前)
+                snapshot: {
+                    budget: gameState.budget,
+                    schedule: gameState.schedule,
+                    reputation: gameState.reputation
+                },
+                // 快照所有选项的参数 (用于分析动态惩罚的影响)
+                optionsSnapshot: allOptionsCalc
+            });
             
             if (opt.type === 'C') {
                 resolveSafe(opt, calc.c);
@@ -1135,6 +1470,11 @@
             decisionPath[decisionPath.length - 1].exposed = isCaught;
 
             if (isCaught) {
+                // 累进式惩罚逻辑：每次暴露，系数 * 1.1
+                if (experimentGroup === 'dynamic') {
+                    dynamicMultiplier *= 1.1;
+                    dynamicProbAdder += 0.1; // 概率每次+10%
+                }
                 applyResult({
                     budget: calc.fail.b,
                     schedule: calc.fail.s,
@@ -1232,13 +1572,37 @@
 
         function updateUI() {
             document.getElementById('val-budget').innerText = gameState.budget.toFixed(2);
-            document.getElementById('val-schedule').innerText = gameState.schedule.toFixed(2); 
-            document.getElementById('val-reputation').innerText = gameState.reputation.toFixed(2);
-            if (gameState.schedule > LIMIT_SCHEDULE) {
-                document.getElementById('val-schedule').className = "text-red-600 text-base font-bold animate-pulse";
+            
+            // 逻辑修改：状态栏显示剩余或延误
+            const lbl = document.getElementById('lbl-schedule');
+            const valEl = document.getElementById('val-schedule');
+            const box = document.getElementById('box-schedule');
+
+            if (gameState.schedule <= LIMIT_SCHEDULE) {
+                const remaining = LIMIT_SCHEDULE - gameState.schedule;
+                lbl.innerText = "进度(剩余)";
+                valEl.innerText = remaining.toFixed(1); 
+                valEl.className = "text-blue-600 text-base"; // 默认蓝色
+                
+                // 剩余工期 < 2个月，整个框闪烁
+                if (remaining < 2.0) {
+                    valEl.className = "text-red-600 text-base font-bold"; // 文字变红
+                    box.classList.add('animate-box-flash'); // 增加闪烁动画类
+                } else {
+                    box.classList.remove('animate-box-flash');
+                }
+
             } else {
-                document.getElementById('val-schedule').className = "text-blue-600 text-base";
+                // 延误情况
+                const overdue = gameState.schedule - LIMIT_SCHEDULE;
+                lbl.innerText = "进度(延误)";
+                valEl.innerText = "-" + overdue.toFixed(1);
+                valEl.className = "text-red-600 text-base font-bold";
+                // 逻辑修改：延误时也要闪烁
+                box.classList.add('animate-box-flash'); 
             }
+            
+            document.getElementById('val-reputation').innerText = gameState.reputation.toFixed(2);
         }
 
         function nextLevel() {
@@ -1247,71 +1611,216 @@
         }
 
         async function endGame() {
-            // 隐藏顶部 Header
             document.getElementById('main-header').classList.add('hidden');
-
             document.getElementById('screen-result').classList.add('hidden');
             document.getElementById('screen-result').classList.remove('flex');
             document.getElementById('screen-end').classList.remove('hidden');
             document.getElementById('screen-end').classList.add('flex');
             document.getElementById('progress-bar').style.width = '100%';
-            
             document.querySelector('#screen-end .overflow-y-auto').scrollTop = 0;
 
             let finalBudget = gameState.budget; 
             let schedulePenalty = 0;
-            
             if (gameState.schedule > LIMIT_SCHEDULE) {
                 const overdue = gameState.schedule - LIMIT_SCHEDULE;
                 schedulePenalty = Math.ceil(overdue * PENALTY_PER_MONTH); 
                 finalBudget -= schedulePenalty;
                 document.getElementById('end-overdue-stamp').classList.remove('hidden');
             }
-            
             gameState.budget = finalBudget; 
             
-            // updateUI(); // 顶部已隐藏，不再需要更新它
-
+            // 更新 UI
             document.getElementById('end-budget').innerText = finalBudget.toFixed(2);
             document.getElementById('end-schedule').innerText = gameState.schedule.toFixed(2);
             document.getElementById('end-rep').innerText = gameState.reputation.toFixed(2);
-            
             document.getElementById('comp-user-budget').innerText = finalBudget.toFixed(2);
             document.getElementById('comp-user-schedule').innerText = gameState.schedule.toFixed(2);
             document.getElementById('comp-user-rep').innerText = gameState.reputation.toFixed(2);
 
-            const fb = document.getElementById('end-feedback');
-            if (gameState.reputation < 60) {
-                fb.innerHTML = `<strong class="text-red-600 block mb-2">💀 项目列入黑名单</strong>声誉分过低，世行启动制裁程序。你赌输了。`;
-            } else if (schedulePenalty > 0) {
-                fb.innerHTML = `<strong class="text-orange-500 block mb-2">⚠️ 惨胜 (工期逾期)</strong>虽然你很努力，但工期超标导致了 <b>${schedulePenalty}万</b> 罚款。`;
-            } else if (finalBudget < 500) { 
-                fb.innerHTML = `<strong class="text-yellow-600 block mb-2">💸 成本严重超支</strong>为了合规或应对事故，你投入了巨额成本，利润微薄。`;
+            // 智能点评逻辑
+            // 基准：利润600，工期16，声誉160
+            const benchBudget = 600;
+            const benchSchedule = 16.0;
+            const benchRep = 160;
+            const repThreshold = 50; 
+            
+            let feedbackHTML = "";
+
+            // 计算各项偏差 (User - Bench)
+            const diffBudget = finalBudget - benchBudget;
+            const diffSchedule = gameState.schedule - benchSchedule; // 正数表示比基准慢
+            const diffRep = gameState.reputation - benchRep;
+
+            // 修改2：丰富权衡分析内容，增加针对性点评，去除价值判断
+            let tradeOffText = "";
+            let strategyTag = "";
+
+            // 维度1：合规与利润的权衡
+            if (diffBudget > 50 && diffRep < -10) {
+                tradeOffText += "您在决策中倾向于**优先考虑经济指标**。这种策略在短期内能显著提升项目利润，但也伴随着较高的声誉波动风险。";
+                strategyTag = "经济优先型";
+            } else if (diffBudget < -50 && diffRep > 10) {
+                tradeOffText += "您表现出**防御性合规**的特征，通过增加成本投入来换取更高的社会评价和合规安全性。";
+                strategyTag = "合规导向型";
             } else {
-                fb.innerHTML = `<strong class="text-emerald-600 block mb-2">🏆 完美交付</strong>在工期内高质量完工！这需要极高的运气或卓越的平衡能力。`;
+                tradeOffText += "您在经济效益与合规要求之间维持了**相对平衡**的态势，未表现出明显的单一倾向。";
+                strategyTag = "平衡稳健型";
             }
 
-            updateBenchmarks();
+            // 维度2：进度管理的特征
+            if (diffSchedule < -1.0) {
+                tradeOffText += " 在工期管理上，您的决策路径显示出**强烈的进度赶工意愿**，成功压缩了项目周期。";
+            } else if (diffSchedule > 1.0) {
+                tradeOffText += " 在进度控制方面，项目出现了较为明显的延误，这通常是由于在多次决策中选择了耗时较长的整改方案所致。";
+            } else {
+                tradeOffText += " 项目最终工期与合同基准基本持平，显示出您在处理突发事件时对时间成本进行了控制。";
+            }
 
+            // 维度3：风险偏好 (基于实际选择分布)
+            const riskCount = decisionPath.filter(d => d.type === 'A').length;
+            const compCount = decisionPath.filter(d => d.type === 'B').length;
+            const safeCount = decisionPath.filter(d => d.type === 'C').length;
+
+            if (riskCount >= 3) {
+                tradeOffText += " 此外，数据显示您多次选择了低成本但高不确定性的方案，表明您具有较高的**风险承受意愿**。";
+            } else if (safeCount >= 3) {
+                tradeOffText += " 此外，您的决策轨迹显示出对确定性的偏好，倾向于通过标准化流程来**规避潜在的不确定性**。";
+            } else if (compCount >= 3) {
+                tradeOffText += " 此外，您倾向于采用**折中方案**来缓解各方压力，这是一种在资源受限环境下的常见策略。";
+            }
+
+            if (gameState.reputation < repThreshold) {
+                // Case 1: 黑名单 (最严重)
+                feedbackHTML = `
+                    <strong class="text-red-600 block mb-2">⚠️ 项目触发制裁机制 (强制退场)</strong>
+                    <div class="bg-slate-100 p-2 rounded text-xs text-slate-700">
+                        <span class="font-bold">管理洞察：</span><br>
+                        合规是国际项目的生存底线。您的声誉分已低于安全阈值（${repThreshold}分），直接触发了世行的黑名单机制。无论经济收益如何，一旦突破底线，项目商业价值即归零，且会对母公司造成长远的国际市场准入障碍。
+                    </div>
+                `;
+            } else {
+                
+                let overallTitle = "";
+                let overallColor = "";
+                
+                // 判定总体评价 (中性词汇)
+                if (diffBudget >= 0 && diffSchedule <= 0 && diffRep >= -10) {
+                    overallTitle = "🌟 综合价值最大化"; 
+                    overallColor = "text-emerald-600";
+                } else if (diffBudget < 0 && diffSchedule <= 0 && diffRep >= 0) {
+                    overallTitle = "🛡️ 风险规避型管理";
+                    overallColor = "text-blue-600";
+                } else if (diffSchedule > 0) {
+                    overallTitle = "⚠️ 进度管理承压";
+                    overallColor = "text-orange-500";
+                } else if (diffBudget >= 0 && diffRep < -20) {
+                    overallTitle = "📊 风险偏好型管理"; 
+                    overallColor = "text-yellow-600";
+                } else {
+                    overallTitle = "⚖️ 均衡型管理"; 
+                    overallColor = "text-slate-600";
+                }
+                
+                feedbackHTML = `
+                    <strong class="${overallColor} block mb-2">${overallTitle}</strong>
+                    <div class="bg-slate-100 p-2 rounded text-xs text-slate-700 border-l-2 border-slate-300">
+                        <span class="font-bold text-slate-800">⚖️ 权衡分析 (Trade-off)：</span><br>
+                        ${tradeOffText}
+                        <br><br>
+                        这种决策模式反映了项目经理在资源约束（Resources Constraints）下的真实博弈。没有绝对的对错，只有不同优先级带来的不同后果。
+                    </div>
+                `;
+            }
+            
+            document.getElementById('end-feedback').innerHTML = feedbackHTML;
+            
+            updateBenchmarks();
             document.getElementById('loading-stats').classList.remove('hidden');
             
-            // 构建数据对象
+            // 数据存储结构更新
+            const d = userProfile.surveyData;
             const saveData = {
+                // --- 1. 基本结果 (Basic Results) ---
                 budget: finalBudget,
                 schedule: gameState.schedule,
                 reputation: gameState.reputation,
+                
+                // --- 2. 人口统计 (Demographics) ---
+                demo_gender: userProfile.gender,
+                demo_age: userProfile.age,
+                demo_major: userProfile.major,
+                demo_role_pm: userProfile.role_pm,
+                demo_role_hse: userProfile.role_hse,
+                demo_exp_neg: userProfile.exp_neg,
+
+                // --- 3. 实验设定 (Experiment Settings) ---
+                ctx_resource: globalContext.resource,
+                ctx_sensitivity: globalContext.sensitivity,
+                exp_group: experimentGroup, 
+                final_multiplier: dynamicMultiplier,
+
+                // --- 4. 问卷分数 (Survey Scores) ---
                 esgScore: userProfile.esgScore,
                 riskScore: userProfile.riskScore,
-                survey_esg_raw: [userProfile.surveyData.esg1, userProfile.surveyData.esg2, userProfile.surveyData.esg3],
-                survey_risk_raw: [userProfile.surveyData.risk1, userProfile.surveyData.risk2, userProfile.surveyData.risk3],
-                ctx_resource: globalContext.resource,
-                ctx_sensitivity: globalContext.sensitivity
+                moralScore: userProfile.moralScore,
+                timeScore: userProfile.timeScore,
+                
+                // --- 5. 问卷原始数据 (Survey Raw Data) ---
+                raw_moral1: d.moral1, raw_moral2: d.moral2, raw_moral3: d.moral3,
+                raw_time1: d.time1, raw_time2: d.time2, raw_time3: d.time3,
+                raw_esg1: d.esg1, raw_esg2: d.esg2, raw_esg3: d.esg3,
+                raw_risk1: d.risk1, raw_risk2: d.risk2, raw_risk3: d.risk3
             };
             
+            // --- 6. 决策路径 (Decision Path) 按顺序排列 ---
+            // 修改2 & 3 & 4：明确字段名、补充工期数据、按逻辑顺序排列
             if(decisionPath && decisionPath.length > 0) {
                 decisionPath.forEach((dp, index) => {
                     const step = index + 1;
                     if (dp) {
+                        // A. 决策前的快照 (Snapshot BEFORE Decision)
+                        if (dp.snapshot) {
+                            saveData[`d${step}_snap_budget`] = dp.snapshot.budget;
+                            saveData[`d${step}_snap_schedule`] = dp.snapshot.schedule;
+                            saveData[`d${step}_snap_rep`] = dp.snapshot.reputation;
+                        }
+
+                        // B. 此时各选项的具体参数 (Options Parameters AT Decision)
+                        if (dp.optionsSnapshot) {
+                            // Option A (Risk)
+                            const optA = dp.optionsSnapshot.A;
+                            if (optA) {
+                                saveData[`d${step}_optA_fail_prob`] = optA.prob; // 修改2: 明确为 fail_prob
+                                saveData[`d${step}_optA_fail_b`] = optA.fail.b;
+                                saveData[`d${step}_optA_fail_s`] = optA.fail.s; // 修改3: 补充工期
+                                saveData[`d${step}_optA_fail_r`] = optA.fail.r;
+                                saveData[`d${step}_optA_succ_b`] = optA.success.b;
+                                saveData[`d${step}_optA_succ_s`] = optA.success.s; // 修改3: 补充工期
+                                saveData[`d${step}_optA_succ_r`] = optA.success.r; // 修改2(v33.9.39): 补充声誉
+                            }
+                            
+                            // Option B (Compromise)
+                            const optB = dp.optionsSnapshot.B;
+                            if (optB) {
+                                saveData[`d${step}_optB_fail_prob`] = optB.prob; // 修改2: 明确为 fail_prob
+                                saveData[`d${step}_optB_fail_b`] = optB.fail.b;
+                                saveData[`d${step}_optB_fail_s`] = optB.fail.s; // 修改3: 补充工期
+                                saveData[`d${step}_optB_fail_r`] = optB.fail.r;
+                                saveData[`d${step}_optB_succ_b`] = optB.success.b;
+                                saveData[`d${step}_optB_succ_s`] = optB.success.s; // 修改3: 补充工期
+                                saveData[`d${step}_optB_succ_r`] = optB.success.r; // 修改2(v33.9.39): 补充声誉
+                            }
+
+                            // Option C (Compliance)
+                            const optC = dp.optionsSnapshot.C;
+                            if (optC && optC.c) {
+                                saveData[`d${step}_optC_cost_b`] = optC.c.b;
+                                saveData[`d${step}_optC_cost_s`] = optC.c.s; // 修改3: 补充工期
+                                saveData[`d${step}_optC_cost_r`] = optC.c.r;
+                            }
+                        }
+
+                        // C. 用户的最终决策 (User Decision)
                         saveData[`d${step}_type`] = dp.type || 'N/A';
                         saveData[`d${step}_exposed`] = dp.exposed === undefined ? false : dp.exposed;
                     }
@@ -1319,30 +1828,20 @@
             }
 
             try {
-                // 尝试发送数据
                 const response = await fetch(LC_API_URL, {
                     method: 'POST',
-                    headers: {
-                        'X-LC-Id': LC_APP_ID,
-                        'X-LC-Key': LC_APP_KEY,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' },
                     body: JSON.stringify(saveData)
                 });
 
                 if (!response.ok) throw new Error("HTTP " + response.status);
                 const resultJson = await response.json();
-                
-                // 记录当前提交的ID，用于后续排除
                 currentSessionId = resultJson.objectId;
                 console.log("Save Success, ID:", currentSessionId);
-
             } catch(e) {
-                // 离线模式下优雅降级
                 console.warn("Data Sync Failed:", e);
                 document.getElementById('network-status').style.display = 'block';
             }
-
             await fetchAverageData();
         }
 
@@ -1351,62 +1850,40 @@
             const elBudget = document.getElementById('avg-budget');
             const elSchedule = document.getElementById('avg-schedule');
             const elRep = document.getElementById('avg-rep');
-            
-            document.getElementById('loading-stats').classList.remove('hidden');
-
             try {
                 const response = await fetch(LC_API_URL + '?limit=200&order=-createdAt', {
                     method: 'GET',
-                    headers: {
-                        'X-LC-Id': LC_APP_ID,
-                        'X-LC-Key': LC_APP_KEY,
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' }
                 });
-                
                 if(!response.ok) throw new Error("Fetch Error");
-                
                 const data = await response.json();
                 let results = data.results || [];
-
-                // 排除当前用户的数据
-                if (currentSessionId) {
-                    results = results.filter(r => r.objectId !== currentSessionId);
-                }
-
+                if (currentSessionId) results = results.filter(r => r.objectId !== currentSessionId);
                 if (results && results.length > 0) {
                     let sumB = 0, sumS = 0, sumR = 0;
-                    results.forEach(r => {
-                        sumB += (r.budget || 0);
-                        sumS += (r.schedule || 0);
-                        sumR += (r.reputation || 0);
-                    });
-                    
+                    results.forEach(r => { sumB += (r.budget || 0); sumS += (r.schedule || 0); sumR += (r.reputation || 0); });
                     avgLabel.innerText = `👥 学员平均 (N=${results.length})`; 
-                    avgLabel.className = ""; 
                     elBudget.innerText = (sumB / results.length).toFixed(2);
                     elSchedule.innerText = (sumS / results.length).toFixed(2);
                     elRep.innerText = (sumR / results.length).toFixed(2);
                 } else {
-                    // 如果排除后没有数据（或者本来就是第一个人）
                     avgLabel.innerText = `👥 暂无其他数据`;
-                    elBudget.innerText = "-";
-                    elSchedule.innerText = "-";
-                    elRep.innerText = "-";
+                    elBudget.innerText = "-"; elSchedule.innerText = "-"; elRep.innerText = "-";
                 }
-
             } catch(e) {
-                // 离线模式下优雅降级
                 console.error("Fetch Failed", e);
                 avgLabel.innerText = "⚠️ 离线模式";
-                elBudget.innerText = "本地";
-                elSchedule.innerText = "本地";
-                elRep.innerText = "本地";
+                elBudget.innerText = "本地"; elSchedule.innerText = "本地"; elRep.innerText = "本地";
                 document.getElementById('network-status').style.display = 'block';
             }
             document.getElementById('loading-stats').classList.add('hidden');
         }
 
+        function forceRetryCloud() {
+            document.getElementById('loading-stats').classList.remove('hidden');
+            fetchAverageData();
+        }
+        
         function updateBenchmarks() {
             const bestC = { b: 1000 + (5 * -80), s: 12.0 + (5 * 0.8), r: 100 + (5 * 12) };
             const bestLuck = { b: 1000 + (5 * -16), s: 12.0 + (5 * 0.16), r: 100 + 0 };
@@ -1427,11 +1904,6 @@
             document.getElementById('bench-worst-budget').innerText = worstB.toFixed(2);
             document.getElementById('bench-worst-schedule').innerText = worstS.toFixed(2);
             document.getElementById('bench-worst-rep').innerText = worstR.toFixed(2);
-        }
-
-        function forceRetryCloud() {
-            document.getElementById('avg-label').innerText = "🔄 ...";
-            fetchAverageData();
         }
     </script>
 <script>window.parent.postMessage({ action: "ready" }, "*"); 
