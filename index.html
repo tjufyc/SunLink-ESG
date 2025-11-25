@@ -1069,17 +1069,25 @@
             grid.innerHTML = '';
             const resList = ['low', 'mid', 'high'];
             const senList = ['low', 'mid', 'high'];
+            
+            // 生成所有可能的组合
             const combinations = [];
             resList.forEach(r => { senList.forEach(s => { combinations.push({ r, s }); }); });
+            
+            // 渲染9个格子
             combinations.forEach((c, idx) => {
                 const el = document.createElement('div');
                 el.className = `grid-cell grid-cell-${idx}`;
                 el.innerHTML = `<div class="grid-cell-text">${getResDescShort(c.r)}</div><div class="grid-cell-sub">+${getSenDescShort(c.s)}</div>`;
                 grid.appendChild(el);
             });
-            globalContext.resource = resList[Math.floor(Math.random() * 3)];
-            globalContext.sensitivity = senList[Math.floor(Math.random() * 3)];
-            const targetIndex = combinations.findIndex(c => c.r === globalContext.resource && c.s === globalContext.sensitivity);
+
+            // 修改1：确保完全随机，直接从 0-8 中选一个索引
+            const targetIndex = Math.floor(Math.random() * combinations.length); // 0-8
+            const target = combinations[targetIndex];
+            globalContext.resource = target.r;
+            globalContext.sensitivity = target.s;
+
             let jumps = 0;
             let currentHighlight = 0;
             const maxJumps = 15 + Math.floor(Math.random() * 5);
@@ -1175,53 +1183,9 @@
                     <tbody>
             `;
 
-            html += `
-                <tr>
-                    <td class="font-bold text-blue-600">C 合规</td>
-                    <td>-</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">-120</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">-100</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">-80</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">+1.2</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">+1.0</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">+0.8</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">+8</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">+10</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">+12</td>
-                </tr>
-            `;
-            html += `
-                <tr>
-                    <td rowspan="3" class="font-bold text-yellow-600">B 妥协</td>
-                    <td class="prob-row" colspan="10">
-                        ${buildProbString('低敏感30%', '中敏感40%', '高敏感50%')}
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-[8px]">未暴露</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">-48</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">-40</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">-32</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">+0.48</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">+0.4</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">+0.32</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">0</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">0</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">0</td>
-                </tr>
-                <tr>
-                    <td class="text-[8px] text-red-500">暴露</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">-156</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">-130</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">-104</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">+1.56</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">+1.3</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">+1.04</td>
-                    <td class="${r==='low'?'matrix-highlight':''}">-12</td>
-                    <td class="${r==='mid'?'matrix-highlight':''}">-10</td>
-                    <td class="${r==='high'?'matrix-highlight':''}">-8</td>
-                </tr>
-            `;
+            // 修改2：调整渲染顺序 A -> B -> C
+
+            // A 部分
             html += `
                 <tr>
                     <td rowspan="3" class="font-bold text-red-600">A 逃避</td>
@@ -1254,7 +1218,58 @@
                     <td class="${r==='high'?'matrix-highlight':''}">-16</td>
                 </tr>
             `;
+
+            // B 部分
+            html += `
+                <tr>
+                    <td rowspan="3" class="font-bold text-yellow-600">B 妥协</td>
+                    <td class="prob-row" colspan="10">
+                        ${buildProbString('低敏感30%', '中敏感40%', '高敏感50%')}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-[8px]">未暴露</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">-48</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">-40</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">-32</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">+0.48</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">+0.4</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">+0.32</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">0</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">0</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">0</td>
+                </tr>
+                <tr>
+                    <td class="text-[8px] text-red-500">暴露</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">-156</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">-130</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">-104</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">+1.56</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">+1.3</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">+1.04</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">-12</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">-10</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">-8</td>
+                </tr>
+            `;
             
+            // C 部分
+            html += `
+                <tr>
+                    <td class="font-bold text-blue-600">C 合规</td>
+                    <td>-</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">-120</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">-100</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">-80</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">+1.2</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">+1.0</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">+0.8</td>
+                    <td class="${r==='low'?'matrix-highlight':''}">+8</td>
+                    <td class="${r==='mid'?'matrix-highlight':''}">+10</td>
+                    <td class="${r==='high'?'matrix-highlight':''}">+12</td>
+                </tr>
+            `;
+
             html += "</tbody></table>";
             document.getElementById('matrix-container').innerHTML = html;
         }
@@ -1621,7 +1636,10 @@
 
             let finalBudget = gameState.budget; 
             let schedulePenalty = 0;
-            if (gameState.schedule > LIMIT_SCHEDULE) {
+            // 逻辑修改：记录是否发生延误
+            const isDelayed = gameState.schedule > LIMIT_SCHEDULE;
+
+            if (isDelayed) {
                 const overdue = gameState.schedule - LIMIT_SCHEDULE;
                 schedulePenalty = Math.ceil(overdue * PENALTY_PER_MONTH); 
                 finalBudget -= schedulePenalty;
@@ -1655,25 +1673,29 @@
             let tradeOffText = "";
             let strategyTag = "";
 
-            // 维度1：合规与利润的权衡
-            if (diffBudget > 50 && diffRep < -10) {
-                tradeOffText += "您在决策中倾向于**优先考虑经济指标**。这种策略在短期内能显著提升项目利润，但也伴随着较高的声誉波动风险。";
-                strategyTag = "经济优先型";
-            } else if (diffBudget < -50 && diffRep > 10) {
-                tradeOffText += "您表现出**防御性合规**的特征，通过增加成本投入来换取更高的社会评价和合规安全性。";
-                strategyTag = "合规导向型";
+            // 维度1：利润与工期的综合评价 (新增逻辑)
+            if (isDelayed) {
+                tradeOffText += `您的项目发生了工期延误，由此产生的<b class="text-red-600">违约赔偿金</b>严重侵蚀了最终利润。这提示在国际工程中，进度管理不仅是时间问题，更是核心的成本风险。`;
+                if (finalBudget < 200) {
+                     tradeOffText += ` 加上合规成本或罚款，项目经济效益已<b class="text-red-600">受到重创</b>。`;
+                }
             } else {
-                tradeOffText += "您在经济效益与合规要求之间维持了**相对平衡**的态势，未表现出明显的单一倾向。";
-                strategyTag = "平衡稳健型";
+                if (diffBudget > 50) {
+                    tradeOffText += `您实现了<b class="text-emerald-600">较高的经济效益</b>，这得益于有效的进度控制（避免了罚款）以及对合规成本的控制。`;
+                } else if (diffBudget < -100) {
+                    tradeOffText += `尽管工期满足要求，但您的最终利润较低，主要是为了满足合规要求或应对暴露风险支付了<b class="text-orange-600">高昂的直接成本</b>。`;
+                } else {
+                    tradeOffText += `您在工期达标的基础上，维持了<b class="text-blue-600">合理的利润水平</b>。`;
+                }
             }
 
-            // 维度2：进度管理的特征
-            if (diffSchedule < -1.0) {
-                tradeOffText += " 在工期管理上，您的决策路径显示出**强烈的进度赶工意愿**，成功压缩了项目周期。";
-            } else if (diffSchedule > 1.0) {
-                tradeOffText += " 在进度控制方面，项目出现了较为明显的延误，这通常是由于在多次决策中选择了耗时较长的整改方案所致。";
+            // 维度2：合规与声誉的评价 (保留并微调)
+            if (diffRep < -20) {
+                 tradeOffText += ` 同时，您的声誉得分显著低于行业基准，这种<b class="text-yellow-600">声誉赤字</b>可能成为公司未来在该国市场的隐形障碍。`;
+            } else if (diffRep > 20) {
+                 tradeOffText += ` 同时，您积累了<b class="text-emerald-600">优质的声誉资产</b>，虽然为此投入了成本，但这有助于构建长期的社会许可（Social License）。`;
             } else {
-                tradeOffText += " 项目最终工期与合同基准基本持平，显示出您在处理突发事件时对时间成本进行了控制。";
+                 tradeOffText += ` 声誉表现维持在<b class="text-slate-600">行业平均水平</b>，基本满足了世行ESF的底线要求。`;
             }
 
             // 维度3：风险偏好 (基于实际选择分布)
@@ -1682,11 +1704,11 @@
             const safeCount = decisionPath.filter(d => d.type === 'C').length;
 
             if (riskCount >= 3) {
-                tradeOffText += " 此外，数据显示您多次选择了低成本但高不确定性的方案，表明您具有较高的**风险承受意愿**。";
+                tradeOffText += " <br><br>从决策风格看，您多次选择了低成本但高不确定性的方案，表明您具有较高的**风险承受意愿**。";
             } else if (safeCount >= 3) {
-                tradeOffText += " 此外，您的决策轨迹显示出对确定性的偏好，倾向于通过标准化流程来**规避潜在的不确定性**。";
+                tradeOffText += " <br><br>从决策风格看，您的决策轨迹显示出对确定性的偏好，倾向于通过标准化流程来**规避潜在的不确定性**。";
             } else if (compCount >= 3) {
-                tradeOffText += " 此外，您倾向于采用**折中方案**来缓解各方压力，这是一种在资源受限环境下的常见策略。";
+                tradeOffText += " <br><br>从决策风格看，您倾向于采用**折中方案**来缓解各方压力，这是一种在资源受限环境下的常见策略。";
             }
 
             if (gameState.reputation < repThreshold) {
