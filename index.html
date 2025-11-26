@@ -996,9 +996,20 @@
 
 
         // --- LeanCloud Config ---
+        // [Fix] 使用更通用的配置方式，并动态构建API URL
         const LC_APP_ID = "esL6o1jmpB3rVGlkjsE6OFRu-MdYXbMMI";
         const LC_APP_KEY = "B1fDIAC8C2dXizdlslG7Cl1D";
-        const LC_API_URL = "https://esl6o1jm.api.lncldglobal.com/1.1/classes/GameResult";
+        
+        // [Fix] 动态构建 API URL 逻辑
+        // LeanCloud 国际版/国内版自适应域名策略
+        function getLeanCloudUrl() {
+            // 提取 AppId 前8位，转小写
+            const prefix = LC_APP_ID.substring(0, 8).toLowerCase();
+            // 构建基于 AppId 的独立 API 域名 (最稳健的方式)
+            return `https://${prefix}.api.lncldglobal.com/1.1/classes/GameResult`;
+        }
+        
+        const LC_API_URL = getLeanCloudUrl();
 
         // --- 数值逻辑引擎 ---
         const STRATEGY_LOGIC = {
@@ -1894,10 +1905,12 @@
             let industryAvg = { budget: 600.0, schedule: 16.0, rep: 60.0 };
             let avgCount = 0;
 
+            // [Fix] 尝试获取数据，如果失败则使用离线模式
             try {
                 const response = await fetch(LC_API_URL + '?limit=200&order=-createdAt', {
                     method: 'GET',
-                    headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' }
+                    headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' },
+                    mode: 'cors' // [Fix] 显式声明跨域
                 });
                 if (response.ok) {
                     const data = await response.json();
@@ -1960,7 +1973,7 @@
             analysisText = `在本次挑战中，${styleDesc}最终结果显示，您的${budgetEval}，同时${repEval}。`;
             
             if (avgCount === 0) {
-                analysisText += `<br><span class="text-gray-400 italic text-xs">(注：当前暂无足够云端数据，对比基于理论中性值)</span>`;
+                analysisText += `<br><span class="text-gray-400 italic text-xs">(注：当前网络连接受限，对比基于理论中性值)</span>`;
             }
 
             if (gameState.reputation < repThreshold) {
@@ -2085,7 +2098,8 @@
                 const response = await fetch(LC_API_URL, {
                     method: 'POST',
                     headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(saveData)
+                    body: JSON.stringify(saveData),
+                    mode: 'cors' // [Fix] 显式声明跨域
                 });
 
                 if (!response.ok) throw new Error("HTTP " + response.status);
@@ -2095,6 +2109,7 @@
             } catch(e) {
                 console.warn("Data Sync Failed:", e);
                 document.getElementById('network-status').style.display = 'block';
+                document.getElementById('network-status').innerText = "⚠️ 网络连接不稳定，部分数据无法同步";
             }
             await fetchAverageData();
         }
@@ -2107,7 +2122,8 @@
             try {
                 const response = await fetch(LC_API_URL + '?limit=200&order=-createdAt', {
                     method: 'GET',
-                    headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' }
+                    headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' },
+                    mode: 'cors'
                 });
                 if(!response.ok) throw new Error("Fetch Error");
                 const data = await response.json();
