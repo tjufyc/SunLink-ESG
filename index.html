@@ -63,11 +63,10 @@
         .radio-label input { display: none; }
 
 
-        /* 九宫格随机样式 - 修改部分 */
+        /* 九宫格随机样式 */
         .grid-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 100%; max-width: 300px; margin: 0 auto; }
         .grid-cell { 
             aspect-ratio: 1; 
-            /* 基础边框，会被JS动态类覆盖，但active需保留 */
             border: 1px solid rgba(0,0,0,0.1); 
             border-radius: 8px; 
             display: flex; 
@@ -78,7 +77,6 @@
             opacity: 0.7; 
             padding: 2px;
         }
-        /* 修改：选中状态拥有最高优先级，强制变蓝 */
         .grid-cell.active { 
             background-color: #3b82f6 !important; 
             color: white !important; 
@@ -88,13 +86,12 @@
             box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5); 
             z-index: 10; 
         }
-        /* 修改：统一字体大小，确保三行一致 */
         .grid-unified-text { 
             font-size: 9px; 
             font-weight: bold; 
             line-height: 1.4; 
             text-align: center;
-            white-space: nowrap; /* 防止文字折行 */
+            white-space: nowrap; 
         }
 
         .ctx-desc-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 8px; }
@@ -144,9 +141,8 @@
             display: flex; gap: 12px; /* 按钮间距 */
         }
 
-        /* 主要按钮 (右侧) */
         .btn-primary {
-            flex: 2; /* 占据更多空间 */
+            flex: 2; 
             background: #1e293b; color: white;
             font-weight: bold; border-radius: 12px;
             padding: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
@@ -156,9 +152,8 @@
         .btn-primary:active { transform: scale(0.98); }
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* 次要/返回按钮 (左侧) */
         .btn-secondary {
-            flex: 1; /* 占据较少空间 */
+            flex: 1; 
             background: #f1f5f9; color: #64748b;
             font-weight: bold; border-radius: 12px;
             padding: 14px; border: 1px solid #e2e8f0;
@@ -167,11 +162,9 @@
         }
         .btn-secondary:active { background: #e2e8f0; }
         
-        /* 强耦合UI高亮样式 */
         .highlight-short-term { background-color: #f0fdf4; color: #15803d; font-weight: bold; padding: 0 2px; border-radius: 2px; border: 1px solid #bbf7d0; }
         .highlight-long-term { background-color: #fefce8; color: #854d0e; font-weight: bold; padding: 0 2px; border-radius: 2px; border: 1px solid #fef08a; }
 
-        /* 状态栏红色闪烁动画 */
         @keyframes box-flash-red {
             0%, 100% { background-color: #f8fafc; border-color: #e2e8f0; }
             50% { background-color: #fee2e2; border-color: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
@@ -180,7 +173,7 @@
             animation: box-flash-red 1s infinite;
         }
 
-        /* --- 启动海报 (v4.4 Layout & Bar Fix Edition) --- */
+        /* --- 启动海报 --- */
         #screen-poster {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 9999 !important;
@@ -197,14 +190,12 @@
             filter: brightness(0.8) contrast(1.1);
         }
         
-        /* 遮罩层 */
         .poster-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.9) 100%);
             z-index: 102;
         }
 
-        /* 标题容器 */
         .poster-title-container {
             position: absolute;
             top: 30%; 
@@ -240,7 +231,6 @@
             text-transform: uppercase;
         }
 
-        /* 底部机构信息 */
         .poster-footer-info {
             position: absolute; 
             bottom: 25%; 
@@ -268,7 +258,6 @@
             font-weight: 500;
         }
 
-        /* 3秒倒计时进度条 */
         .poster-bar-container {
             position: absolute; 
             bottom: 35%; 
@@ -996,20 +985,12 @@
 
 
         // --- LeanCloud Config ---
-        // [Fix] 使用更通用的配置方式，并动态构建API URL
         const LC_APP_ID = "esL6o1jmpB3rVGlkjsE6OFRu-MdYXbMMI";
         const LC_APP_KEY = "B1fDIAC8C2dXizdlslG7Cl1D";
         
-        // [Fix] 动态构建 API URL 逻辑
-        // LeanCloud 国际版/国内版自适应域名策略
-        function getLeanCloudUrl() {
-            // 提取 AppId 前8位，转小写
-            const prefix = LC_APP_ID.substring(0, 8).toLowerCase();
-            // 构建基于 AppId 的独立 API 域名 (最稳健的方式)
-            return `https://${prefix}.api.lncldglobal.com/1.1/classes/GameResult`;
-        }
-        
-        const LC_API_URL = getLeanCloudUrl();
+        // [Fix] 硬编码国际版(US节点) API 域名，防止JS动态生成在手机端的不确定性
+        // 这是 LeanCloud US 节点的标准访问格式
+        const LC_API_URL = "https://esl6o1jm.api.lncldglobal.com/1.1/classes/GameResult";
 
         // --- 数值逻辑引擎 ---
         const STRATEGY_LOGIC = {
@@ -1281,9 +1262,6 @@
         }
 
         // --- 九宫格动画 & 逻辑 ---
-        
-        // 辅助函数: 获取风险等级背景色
-        // 逻辑: (2 - resIdx) + senIdx = 0 (best) to 4 (worst)
         function getRiskBgClass(r, s) {
              const resMap = { 'low': 0, 'mid': 1, 'high': 2 };
              const senMap = { 'low': 0, 'mid': 1, 'high': 2 };
@@ -1291,15 +1269,10 @@
              const sIdx = senMap[s];
              const riskScore = (2 - rIdx) + sIdx; 
              
-             // 4级: 最红 (低资高敏)
              if (riskScore === 4) return 'bg-red-200 text-red-900 border-red-300';
-             // 3级: 橙色
              if (riskScore === 3) return 'bg-orange-100 text-orange-900 border-orange-200';
-             // 2级: 黄色
              if (riskScore === 2) return 'bg-yellow-50 text-yellow-900 border-yellow-200';
-             // 1级: 浅绿
              if (riskScore === 1) return 'bg-lime-50 text-lime-900 border-lime-200';
-             // 0级: 最绿 (高资低敏)
              return 'bg-emerald-100 text-emerald-900 border-emerald-200';
         }
 
@@ -1314,14 +1287,10 @@
             const combinations = [];
             resList.forEach(r => { senList.forEach(s => { combinations.push({ r, s }); }); });
             
-            // 渲染9个格子
             combinations.forEach((c, idx) => {
                 const el = document.createElement('div');
-                // 添加动态背景色
                 const bgClass = getRiskBgClass(c.r, c.s);
                 el.className = `grid-cell grid-cell-${idx} ${bgClass}`;
-                
-                // 修改：三行布局，统一字体大小
                 el.innerHTML = `
                     <div class="grid-unified-text">${getResDescShort(c.r)}</div>
                     <div class="grid-unified-text my-0.5">+</div>
@@ -1363,12 +1332,8 @@
             combinations.forEach((c, idx) => {
                 const el = document.createElement('div');
                 const bgClass = getRiskBgClass(c.r, c.s);
-                // 保持 active 状态
                 el.className = `grid-cell ${idx === targetIndex ? 'active' : ''} ${bgClass}`;
-                
                 if (idx === targetIndex) el.style.opacity = 1;
-                
-                // 修改：三行布局，统一字体大小
                 el.innerHTML = `
                     <div class="grid-unified-text">${getResDescShort(c.r)}</div>
                     <div class="grid-unified-text my-0.5">+</div>
@@ -1439,7 +1404,7 @@
                     <tbody>
             `;
 
-            // A 部分 (bg-red-50)
+            // A 部分
             html += `
                 <tr class="bg-red-50">
                     <td rowspan="3" class="font-bold text-red-600 border border-red-200">A 逃避</td>
@@ -1473,7 +1438,7 @@
                 </tr>
             `;
 
-            // B 部分 (bg-yellow-50)
+            // B 部分
             html += `
                 <tr class="bg-yellow-50">
                     <td rowspan="3" class="font-bold text-yellow-600 border border-yellow-200">B 妥协</td>
@@ -1507,7 +1472,7 @@
                 </tr>
             `;
             
-            // C 部分 (bg-green-50)
+            // C 部分
             html += `
                 <tr class="bg-green-50">
                     <td class="font-bold text-green-600 border border-green-200">C 合规</td>
@@ -1874,6 +1839,40 @@
             loadLevel(nextIndex);
         }
 
+        // [Fix] 增加网络重试逻辑，解决手机端连接不稳定问题
+        async function submitDataWithRetry(url, data, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const controller = new AbortController();
+                    const id = setTimeout(() => controller.abort(), 8000); // 8秒超时
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 
+                            'X-LC-Id': LC_APP_ID, 
+                            'X-LC-Key': LC_APP_KEY, 
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data),
+                        keepalive: true, // 关键：允许后台发送
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(id);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return await response.json();
+                    
+                } catch (err) {
+                    console.warn(`Attempt ${i+1} failed: ${err.message}`);
+                    if (i === retries - 1) throw err;
+                    await new Promise(res => setTimeout(res, delay * Math.pow(2, i))); // 指数退避
+                }
+            }
+        }
+
         async function endGame() {
             document.getElementById('main-header').classList.add('hidden');
             document.getElementById('screen-result').classList.add('hidden');
@@ -1904,33 +1903,6 @@
 
             let industryAvg = { budget: 600.0, schedule: 16.0, rep: 60.0 };
             let avgCount = 0;
-
-            // [Fix] 尝试获取数据，如果失败则使用离线模式
-            try {
-                const response = await fetch(LC_API_URL + '?limit=200&order=-createdAt', {
-                    method: 'GET',
-                    headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' },
-                    mode: 'cors' // [Fix] 显式声明跨域
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    const results = data.results || [];
-                    if (results.length > 0) {
-                        let sumB = 0, sumS = 0, sumR = 0;
-                        results.forEach(r => { 
-                            sumB += (r.budget || 0); 
-                            sumS += (r.schedule || 0); 
-                            sumR += (r.reputation || 0); 
-                        });
-                        industryAvg.budget = sumB / results.length;
-                        industryAvg.schedule = sumS / results.length;
-                        industryAvg.rep = sumR / results.length;
-                        avgCount = results.length;
-                    }
-                }
-            } catch (e) {
-                console.warn("点评数据预加载失败，使用理论中性值", e);
-            }
 
             const bestCompliance = { budget: 600, schedule: 16.0, rep: 160.0 }; 
             const repThreshold = 50; 
@@ -2094,22 +2066,16 @@
                 });
             }
 
+            // [Fix] 使用新的重试函数提交数据
             try {
-                const response = await fetch(LC_API_URL, {
-                    method: 'POST',
-                    headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(saveData),
-                    mode: 'cors' // [Fix] 显式声明跨域
-                });
-
-                if (!response.ok) throw new Error("HTTP " + response.status);
-                const resultJson = await response.json();
+                const resultJson = await submitDataWithRetry(LC_API_URL, saveData);
                 currentSessionId = resultJson.objectId;
                 console.log("Save Success, ID:", currentSessionId);
             } catch(e) {
-                console.warn("Data Sync Failed:", e);
+                console.warn("Data Sync Failed after retries:", e);
                 document.getElementById('network-status').style.display = 'block';
-                document.getElementById('network-status').innerText = "⚠️ 网络连接不稳定，部分数据无法同步";
+                const errMsg = e.message.indexOf("HTTP") > -1 ? e.message : "网络连接超时";
+                document.getElementById('network-status').innerText = `⚠️ 离线模式: ${errMsg} (数据未同步)`;
             }
             await fetchAverageData();
         }
@@ -2119,14 +2085,21 @@
             const elBudget = document.getElementById('avg-budget');
             const elSchedule = document.getElementById('avg-schedule');
             const elRep = document.getElementById('avg-rep');
+            
+            // [Fix] 使用带有超时控制的 Fetch，但不重试（GET请求失败就直接降级）
             try {
+                const controller = new AbortController();
+                setTimeout(() => controller.abort(), 6000); // 6秒超时
+                
                 const response = await fetch(LC_API_URL + '?limit=200&order=-createdAt', {
                     method: 'GET',
                     headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' },
-                    mode: 'cors'
+                    signal: controller.signal
                 });
-                if(!response.ok) throw new Error("Fetch Error");
+                
+                if(!response.ok) throw new Error("Fetch Error " + response.status);
                 const data = await response.json();
+                
                 let results = data.results || [];
                 if (currentSessionId) results = results.filter(r => r.objectId !== currentSessionId);
                 if (results && results.length > 0) {
