@@ -984,12 +984,16 @@
         })();
 
 
-        // --- LeanCloud Config ---
+        // --- LeanCloud Config (Critical Fix) ---
         const LC_APP_ID = "esL6o1jmpB3rVGlkjsE6OFRu-MdYXbMMI";
         const LC_APP_KEY = "B1fDIAC8C2dXizdlslG7Cl1D";
         
-        // [Fix] 即使是国际版，直接拼AppID也是最稳的
-        const LC_API_URL = "https://esl6o1jm.api.lncldglobal.com/1.1/classes/GameResult";
+        // [FIX] 使用应用专属域名 (esl6o1jm 前缀)，这是移动端访问的最稳妥方式
+        // 备用通用域名，以防万一
+        const LC_API_HOST_PRIMARY = "https://esl6o1jm.api.lncldglobal.com";
+        const LC_API_HOST_BACKUP = "https://api.lncldglobal.com";
+        
+        const CLASS_PATH = "/1.1/classes/GameResult";
 
         // --- 数值逻辑引擎 ---
         const STRATEGY_LOGIC = {
@@ -1838,25 +1842,32 @@
             loadLevel(nextIndex);
         }
 
-        // [Fix: Mobile Network]
-        // 1. 使用传统的 XHR (XMLHttpRequest) 替代 Fetch，因为 XHR 在部分安卓 Webview 和微信浏览器中兼容性更好
-        // 2. 增加 JSON.stringify 之前的数据清洗，确保没有 undefined，防止 LeanCloud 报错
-        // 3. 增加 Explicit Timeout 设置
+        // [Crucial Network Layer]
+        // 核心修复：使用专属前缀域名，增加头部校验，增加备用机制
+        
         function xhrRequest(method, url, data) {
             return new Promise(function (resolve, reject) {
                 var xhr = new XMLHttpRequest();
                 xhr.open(method, url, true); // async
+                
+                // 标准头
                 xhr.setRequestHeader("X-LC-Id", LC_APP_ID);
                 xhr.setRequestHeader("X-LC-Key", LC_APP_KEY);
-                xhr.setRequestHeader("Content-Type", "application/json");
                 
-                xhr.timeout = 10000; // 10s timeout
+                // 显式 JSON 头，部分移动端 Webview 如果没有 Content-Type: application/json 会不解析 body
+                xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                
+                // 显式 Accept 头，部分后端（或中间网关）会因为缺少这个而拒绝
+                xhr.setRequestHeader("Accept", "application/json");
+
+                xhr.timeout = 15000; // 15s timeout for mobile networks
 
                 xhr.onload = function () {
                     if (this.status >= 200 && this.status < 300) {
                         try {
                             resolve(JSON.parse(xhr.responseText));
                         } catch(e) {
+                            console.warn("JSON Parse warning", e);
                             reject({ message: "JSON Parse Error", status: this.status });
                         }
                     } else {
@@ -1867,9 +1878,11 @@
                         });
                     }
                 };
+                
                 xhr.onerror = function () {
-                    reject({ message: "Network Error", status: xhr.status });
+                    reject({ message: "Network Error (XHR.onerror triggered)", status: 0 });
                 };
+                
                 xhr.ontimeout = function () {
                     reject({ message: "Request Timeout", status: 408 });
                 };
@@ -1886,15 +1899,23 @@
             });
         }
 
-        async function submitDataWithRetry(url, data, retries = 2) {
-            for (let i = 0; i <= retries; i++) {
+        // 带有域名故障转移的请求函数
+        async function requestWithFailover(method, path, data) {
+            const primaryUrl = LC_API_HOST_PRIMARY + path;
+            const backupUrl = LC_API_HOST_BACKUP + path;
+            
+            try {
+                console.log("Attempting Primary:", primaryUrl);
+                return await xhrRequest(method, primaryUrl, data);
+            } catch (err1) {
+                console.warn("Primary failed, switching to backup:", backupUrl, err1);
                 try {
-                    return await xhrRequest("POST", url, data);
-                } catch (err) {
-                    console.warn("Retry " + (i+1) + " failed:", err);
-                    if (i === retries) throw err;
-                    // 等待时间：500ms, 1000ms
-                    await new Promise(r => setTimeout(r, 500 * Math.pow(2, i)));
+                    // 尝试备用域名
+                    return await xhrRequest(method, backupUrl, data);
+                } catch (err2) {
+                    // 两个都失败
+                    console.error("All endpoints failed");
+                    throw err2; 
                 }
             }
         }
@@ -2092,13 +2113,13 @@
                 });
             }
 
-            // [Fix] 重构提交逻辑，使用 XHR
+            // [Fix] 使用故障转移机制
             try {
-                const resultJson = await submitDataWithRetry(LC_API_URL, saveData);
+                const resultJson = await requestWithFailover("POST", CLASS_PATH, saveData);
                 currentSessionId = resultJson.objectId;
                 console.log("Save Success, ID:", currentSessionId);
             } catch(e) {
-                console.error("Data Sync Failed:", e);
+                console.error("Data Sync Failed after failover:", e);
                 document.getElementById('network-status').style.display = 'block';
                 let errMsg = "未知错误";
                 if (e.status) errMsg = `HTTP ${e.status}`;
@@ -2120,9 +2141,9 @@
             const elSchedule = document.getElementById('avg-schedule');
             const elRep = document.getElementById('avg-rep');
             
-            // [Fix] 重构获取逻辑，使用 XHR GET
             try {
-                const data = await xhrRequest("GET", LC_API_URL + '?limit=200&order=-createdAt');
+                // 同样使用故障转移机制
+                const data = await requestWithFailover("GET", CLASS_PATH + '?limit=200&order=-createdAt');
                 
                 let results = data.results || [];
                 if (currentSessionId) results = results.filter(r => r.objectId !== currentSessionId);
