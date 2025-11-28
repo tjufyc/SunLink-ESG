@@ -329,7 +329,7 @@
         </div>
         <div class="poster-footer-info">
             <span class="poster-org-name">Tianjin University</span>
-            <span class="poster-center-name">Global Infrastructure Projects Center</span>
+            <span class="poster-center-name">Global Infrastructure Project Center</span>
         </div>
     </div>
 
@@ -454,6 +454,50 @@
                                     <option value="65+">65岁以上</option>
                                 </select>
                             </div>
+                        </div>
+
+                         <!-- 新增：工作经验 -->
+                         <div class="form-group" id="q-work-exp">
+                            <label class="form-label">工作经验</label>
+                            <select class="form-select" data-field="work_exp">
+                                <option value="">请选择</option>
+                                <option value="1-5">1-5年</option>
+                                <option value="6-10">6-10年</option>
+                                <option value="11-15">11-15年</option>
+                                <option value="16-20">16-20年</option>
+                                <option value="21-25">21-25年</option>
+                                <option value="26-30">26-30年</option>
+                                <option value="31-35">31-35年</option>
+                                <option value="36-40">36-40年</option>
+                                <option value="40+">40年以上</option>
+                            </select>
+                        </div>
+
+                         <!-- 新增：单位性质 -->
+                         <div class="form-group" id="q-org-type">
+                            <label class="form-label">单位性质</label>
+                            <select class="form-select" data-field="org_type">
+                                <option value="">请选择</option>
+                                <option value="Owner">业主单位</option>
+                                <option value="Design">设计单位</option>
+                                <option value="Construction">施工单位</option>
+                                <option value="Supplier">材料设备供应商</option>
+                                <option value="Government">政府监管部门</option>
+                                <option value="Consulting">咨询单位</option>
+                                <option value="Other">其他</option>
+                            </select>
+                        </div>
+
+                         <!-- 新增：当前职位 -->
+                         <div class="form-group" id="q-position">
+                            <label class="form-label">当前职位</label>
+                            <select class="form-select" data-field="position">
+                                <option value="">请选择</option>
+                                <option value="Executive">高管</option>
+                                <option value="Manager">部门经理</option>
+                                <option value="Staff">部门职员</option>
+                                <option value="Other">其他</option>
+                            </select>
                         </div>
 
                         <div class="form-group" id="q-major">
@@ -646,6 +690,10 @@
                             </ul>
                         </div>
                     </div>
+                    
+                     <div class="w-full text-center mt-4 mb-2">
+                        <p class="text-[10px] text-slate-400 italic">本项目信息纯属虚构，仅供实验模拟。</p>
+                    </div>
                 </div>
             </div>
             <div class="nav-footer">
@@ -723,7 +771,10 @@
         <div id="screen-matrix" class="hidden flex-col h-full fade-in absolute inset-0 z-15 bg-white">
             <div class="header-spacer"></div>
             <div class="px-4 pt-2 flex-1 overflow-y-auto pb-32">
-                <h2 class="text-lg font-bold text-slate-800 mb-2">SunLink ESG 响应策略表</h2>
+                <h2 class="text-lg font-bold text-slate-800 mb-1">SunLink ESG 响应策略表</h2>
+                 <p class="text-[10px] text-slate-600 mb-2 leading-relaxed bg-slate-50 p-2 rounded border border-slate-100">
+                    出现ESG危机事件后，承包商项目管理团队可选择逃避、妥协或合规三种不同类型的响应措施，详细描述见后续具体事件。需注意，逃避和妥协措施有一定的暴露风险。每种措施在不同情境下（承包商资源水平+项目敏感度）对承包商利润、进度和声誉有不同程度的影响，详见下表。
+                </p>
                 <p class="text-xs text-slate-500 mb-2">基于您的分配（<span id="user-ctx-summary" class="font-bold text-blue-600"></span>），不同策略的后果如下：</p>
                 
                 <div class="overflow-x-auto border border-slate-200 rounded shadow-sm">
@@ -943,6 +994,9 @@
             role_pm: "",
             role_hse: "",
             exp_neg: "",
+            work_exp: "", // 新增
+            org_type: "", // 新增
+            position: "", // 新增
             surveyData: {}
         };
         
@@ -1198,6 +1252,9 @@
             const checks = [
                 { id: 'q-gender', val: userProfile.gender },
                 { id: 'q-age', val: userProfile.age },
+                { id: 'q-work-exp', val: userProfile.work_exp },
+                { id: 'q-org-type', val: userProfile.org_type },
+                { id: 'q-position', val: userProfile.position },
                 { id: 'q-major', val: userProfile.major },
                 { id: 'q-pm', val: userProfile.role_pm },
                 { id: 'q-hse', val: userProfile.role_hse },
@@ -2016,6 +2073,11 @@
                 demo_role_pm: userProfile.role_pm,
                 demo_role_hse: userProfile.role_hse,
                 demo_exp_neg: userProfile.exp_neg,
+                
+                // 新增数据保存
+                demo_work_exp: userProfile.work_exp,
+                demo_org_type: userProfile.org_type,
+                demo_position: userProfile.position,
 
                 ctx_resource: globalContext.resource,
                 ctx_sensitivity: globalContext.sensitivity,
