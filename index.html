@@ -352,7 +352,7 @@
             <div class="flex flex-col items-center bg-slate-50 p-1 rounded border border-slate-200 relative overflow-visible transition-all duration-300" id="box-schedule">
                 <span id="lbl-schedule" class="text-[10px] text-slate-400 scale-90">进度(剩余)</span>
                 <div class="flex items-baseline">
-                    <span id="val-schedule" class="text-blue-600 text-base">4.0</span>
+                    <span id="val-schedule" class="text-blue-600 text-base">5.0</span>
                     <span class="text-[10px] text-slate-300 font-normal ml-0.5">月</span>
                 </div>
                 <div id="float-schedule" class="absolute top-0 left-1/2 -translate-x-1/2"></div>
@@ -644,7 +644,7 @@
                         </div>
                         <div class="bg-blue-50 border border-blue-100 p-2 rounded col-span-1">
                             <div class="text-[10px] text-blue-600 mb-0.5">当前进度/合同工期</div>
-                            <div class="text-sm font-bold text-blue-800">12个月 / 16个月</div>
+                            <div class="text-sm font-bold text-blue-800">12个月 / 17个月</div>
                         </div>
                         <div class="bg-yellow-50 border border-yellow-100 p-2 rounded">
                             <div class="text-[10px] text-yellow-600 mb-0.5">初始声誉</div>
@@ -670,7 +670,7 @@
                             <ul class="list-disc pl-4 space-y-1 text-xs leading-relaxed">
                                 <li><strong>EPC 总承包</strong>；</li>
                                 <li>你所在公司是该项目 EPC 总承包商，你担任<strong>项目经理</strong>角色；</li>
-                                <li class="text-red-700 bg-red-50 p-1 rounded font-bold">关键条款：合同工期16个月，误期损害赔偿费100万/月。</li>
+                                <li class="text-red-700 bg-red-50 p-1 rounded font-bold">关键条款：合同工期17个月，误期损害赔偿费100万/月。</li>
                             </ul>
                         </div>
                         <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
@@ -723,7 +723,7 @@
                     <div class="bg-slate-100 p-2 rounded mb-4 text-[10px] text-slate-500 text-left leading-relaxed border border-slate-200">
                         <span class="font-bold text-slate-700">💡 逻辑说明：</span><br>
                         1. <span class="font-bold">资源越丰富</span>，企业ESG管理能力越强（如拥有专项资金和专家），能有效降低合规成本和负面影响。<br>
-                        2. <span class="font-bold">项目越敏感</span>，各方关注度越高（如NGO、媒体），ESG管理不当被暴露的概率越高。
+                        2. <span class="font-bold">项目越敏感</span>，各方关注度越高（如政府、公众、媒体、NGO等），ESG管理不当被暴露的概率越高。
                     </div>
 
                     <div class="w-full text-left border-t border-slate-100 pt-2">
@@ -907,22 +907,22 @@
                                     <td id="avg-rep">计算中...</td>
                                 </tr>
                                 <tr class="bg-emerald-100 text-emerald-800 font-medium">
-                                    <td title="高资源企业，所有事件选C">最合规决策</td>
-                                    <td id="bench-compliance-budget">600.00</td>
-                                    <td id="bench-compliance-schedule">16.00</td>
-                                    <td id="bench-compliance-rep">160.00</td>
+                                    <td title="中资源企业，所有事件选C">最合规决策</td>
+                                    <td id="bench-compliance-budget">-</td>
+                                    <td id="bench-compliance-schedule">-</td>
+                                    <td id="bench-compliance-rep">-</td>
                                 </tr>
                                 <tr class="bg-yellow-100 text-yellow-800 font-medium">
-                                    <td title="高资源企业，所有选A且不暴露">最侥幸情况</td>
-                                    <td id="bench-luck-budget">920.00</td>
-                                    <td id="bench-luck-schedule">12.80</td>
-                                    <td id="bench-luck-rep">100.00</td>
+                                    <td title="低资源企业，所有选A且不暴露">最侥幸决策</td>
+                                    <td id="bench-luck-budget">-</td>
+                                    <td id="bench-luck-schedule">-</td>
+                                    <td id="bench-luck-rep">-</td>
                                 </tr>
                                 <tr class="bg-red-100 text-red-800 font-medium">
-                                    <td title="低资源企业，所有选A且暴露">最糟糕情况</td> 
-                                    <td id="bench-worst-budget">40.00</td>
-                                    <td id="bench-worst-schedule">21.60</td>
-                                    <td id="bench-worst-rep">-20.00</td>
+                                    <td title="低资源企业，所有选A且暴露">最糟糕决策</td> 
+                                    <td id="bench-worst-budget">-</td>
+                                    <td id="bench-worst-schedule">-</td>
+                                    <td id="bench-worst-rep">-</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -959,7 +959,7 @@
 
     <script>
         // --- 全局配置 ---
-        const LIMIT_SCHEDULE = 16.0; 
+        const LIMIT_SCHEDULE = 17.0; // 修改：工期改为17个月
         const PENALTY_PER_MONTH = 100; 
 
         // --- 实验变量 ---
@@ -994,9 +994,9 @@
             role_pm: "",
             role_hse: "",
             exp_neg: "",
-            work_exp: "", // 新增
-            org_type: "", // 新增
-            position: "", // 新增
+            work_exp: "", 
+            org_type: "", 
+            position: "", 
             surveyData: {}
         };
         
@@ -1639,7 +1639,7 @@
             timePressureEl.innerHTML = ''; 
             
             if (index >= 3) {
-                if (gameState.schedule > 14.5) {
+                if (gameState.schedule > 15.5) { // 略微调整提醒阈值
                 }
             }
 
@@ -1949,7 +1949,7 @@
             document.getElementById('comp-user-schedule').innerText = gameState.schedule.toFixed(2);
             document.getElementById('comp-user-rep').innerText = gameState.reputation.toFixed(2);
 
-            let industryAvg = { budget: 600.0, schedule: 16.0, rep: 60.0 };
+            let industryAvg = { budget: 600.0, schedule: LIMIT_SCHEDULE, rep: 60.0 };
             let avgCount = 0;
 
             try {
@@ -1977,7 +1977,6 @@
                 console.warn("点评数据预加载失败，使用理论中性值", e);
             }
 
-            const bestCompliance = { budget: 600, schedule: 16.0, rep: 160.0 }; 
             const repThreshold = 50; 
 
             let feedbackHTML = "";
@@ -2005,7 +2004,7 @@
             }
 
             let repEval = "";
-            if (gameState.reputation >= bestCompliance.rep - 10) {
+            if (gameState.reputation >= 140) { // 根据新合规基准调整
                 repEval = `声誉表现达到了<span class="text-indigo-600 font-bold">最佳合规标杆</span>水准`;
             } else if (gameState.reputation > industryAvg.rep + 20) {
                 repEval = `声誉积累<span class="text-emerald-600 font-bold">远超同僚</span>`;
@@ -2105,6 +2104,8 @@
                             saveData[`d${step}_snap_budget`] = dp.snapshot.budget;
                             saveData[`d${step}_snap_schedule`] = dp.snapshot.schedule;
                             saveData[`d${step}_snap_rep`] = dp.snapshot.reputation;
+                            // 新增：剩余工期记录
+                            saveData[`d${step}_time_remain`] = (LIMIT_SCHEDULE - dp.snapshot.schedule).toFixed(2);
                         }
 
                         if (dp.optionsSnapshot) {
@@ -2202,13 +2203,21 @@
         }
         
         function updateBenchmarks() {
-            const bestC = { b: 1000 + (5 * -80), s: 12.0 + (5 * 0.8), r: 100 + (5 * 12) };
-            const bestLuck = { b: 1000 + (5 * -16), s: 12.0 + (5 * 0.16), r: 100 + 0 };
+            // C策略 (Mid资源): b=-100, s=1.0, r=10
+            const bestC = { b: 1000 + (5 * -100), s: 12.0 + (5 * 1.0), r: 100 + (5 * 10) };
             
+            // A策略侥幸 (Low资源, Success): b=-24, s=0.24, r=0
+            const bestLuck = { b: 1000 + (5 * -24), s: 12.0 + (5 * 0.24), r: 100 + 0 };
+            
+            // A策略暴露 (Low资源, Fail): b=-192, s=1.92, r=-24
             let worstS = 12.0 + (5 * 1.92);
             let worstB = 1000 + (5 * -192);
             let worstR = 100 + (5 * -24);
-            if (worstS > 16.0) { worstB -= Math.ceil((worstS - 16.0) * 100); }
+            
+            // 计算逾期罚款
+            if (worstS > LIMIT_SCHEDULE) { 
+                worstB -= Math.ceil((worstS - LIMIT_SCHEDULE) * PENALTY_PER_MONTH); 
+            }
 
             document.getElementById('bench-compliance-budget').innerText = bestC.b.toFixed(2);
             document.getElementById('bench-compliance-schedule').innerText = bestC.s.toFixed(2);
