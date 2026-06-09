@@ -1049,117 +1049,11 @@
         })();
 
 
-        // --- Supabase Config ---
-        // 修改痕迹 2026-06-09：LeanCloud 将停止使用，用户数据存储迁移到 Supabase。
-        // 修改痕迹 2026-06-09：参照 GameResult_20260609_202509.csv 的 153 列结构逐列存储。
-        // Supabase 表 game_results 需使用 CSV 同名字段建表，包含 "createdAt"、budget、schedule、reputation、
-        // demo_*、raw_*、*Score、ctx_*、exp_group、final_multiplier 与 d1~d5 决策字段。
-        // alter table game_results enable row level security;
-        // create policy "public game_results read" on game_results for select using (true);
-        // create policy "public game_results insert" on game_results for insert with check (true);
-        // create index if not exists game_results_createdAt_idx on game_results("createdAt" desc);
-        const SUPABASE_CONFIG = {
-            apiUrl: "https://ohfxdcsrxbuedrjcjlez.supabase.co/rest/v1",
-            anonKey: "sb_publishable_CcapO11g3kBjK3h0xYIVfw_Q1Y58WeD",
-            table: "game_results"
-        };
-
-        const getSupabaseRestUrl = () => `${SUPABASE_CONFIG.apiUrl.replace(/\/$/, '')}/${SUPABASE_CONFIG.table}`;
-        const getSupabaseHeaders = (extra = {}) => ({
-            apikey: SUPABASE_CONFIG.anonKey,
-            'Content-Type': 'application/json',
-            ...extra
-        });
-
-        async function fetchCloudResults(limit = 200, excludeId = null) {
-            const params = new URLSearchParams({
-                select: 'createdAt,budget,schedule,reputation',
-                order: 'createdAt.desc',
-                limit: String(limit)
-            });
-            if (excludeId) params.set('createdAt', `neq.${excludeId}`);
-            const response = await fetch(`${getSupabaseRestUrl()}?${params.toString()}`, {
-                method: 'GET',
-                headers: getSupabaseHeaders()
-            });
-            if (!response.ok) {
-                const detail = await response.text();
-                throw new Error(`Supabase fetch failed: ${response.status} ${detail}`);
-            }
-            return await response.json();
-        }
-
-        async function saveCloudResult(saveData) {
-            const resultRecord = {
-                createdAt: new Date().toISOString(),
-                ...saveData
-            };
-            const response = await fetch(getSupabaseRestUrl(), {
-                method: 'POST',
-                headers: getSupabaseHeaders({
-                    Prefer: 'return=minimal'
-                }),
-                body: JSON.stringify(resultRecord)
-            });
-            if (!response.ok) {
-                const detail = await response.text();
-                throw new Error(`Supabase insert failed: ${response.status} ${detail}`);
-            }
-            return resultRecord;
-        }
-
-        // 修改痕迹 2026-06-09：调试用。浏览器控制台运行 testSupabaseInsert() 可验证 Supabase 是否可写。
-        window.testSupabaseInsert = async function() {
-            const testData = {
-                budget: 0,
-                schedule: 0,
-                reputation: 0,
-                demo_gender: "test",
-                demo_age: "test",
-                demo_work_exp: "test",
-                demo_org_type: "test",
-                demo_position: "test",
-                demo_major: "test",
-                demo_role_pm: "test",
-                demo_role_hse: "test",
-                demo_exp_neg: "test",
-                moralScore: 0,
-                timeScore: 0,
-                esgScore: 0,
-                riskScore: 0,
-                ctx_resource: "test",
-                ctx_sensitivity: "test",
-                exp_group: "test",
-                final_multiplier: 0
-            };
-            for (const prefix of ["raw_moral", "raw_time", "raw_esg", "raw_risk"]) {
-                for (let i = 1; i <= 3; i++) testData[`${prefix}${i}`] = 0;
-            }
-            for (let step = 1; step <= 5; step++) {
-                testData[`d${step}_snap_budget`] = 0;
-                testData[`d${step}_snap_schedule`] = 0;
-                testData[`d${step}_time_remain`] = 0;
-                testData[`d${step}_snap_rep`] = 0;
-                for (const option of ["A", "B"]) {
-                    testData[`d${step}_opt${option}_fail_prob`] = 0;
-                    testData[`d${step}_opt${option}_fail_b`] = 0;
-                    testData[`d${step}_opt${option}_fail_s`] = 0;
-                    testData[`d${step}_opt${option}_fail_r`] = 0;
-                    testData[`d${step}_opt${option}_succ_b`] = 0;
-                    testData[`d${step}_opt${option}_succ_s`] = 0;
-                    testData[`d${step}_opt${option}_succ_r`] = 0;
-                }
-                testData[`d${step}_optC_cost_b`] = 0;
-                testData[`d${step}_optC_cost_s`] = 0;
-                testData[`d${step}_optC_cost_r`] = 0;
-                testData[`d${step}_duration`] = 0;
-                testData[`d${step}_type`] = "test";
-                testData[`d${step}_exposed`] = false;
-            }
-            const result = await saveCloudResult(testData);
-            console.log("Supabase test insert success:", result.createdAt);
-            return result;
-        };
+        // --- LeanCloud Config ---
+        const LC_APP_ID = "esL6o1jmpB3rVGlkjsE6OFRu-MdYXbMMI";
+        const LC_APP_KEY = "B1fDIAC8C2dXizdlslG7Cl1D";
+        // 修改：使用自定义 API 域名
+        const LC_API_URL = "https://api.sunlink-esg.com/1.1/classes/GameResult";
 
         // --- 数值逻辑引擎 ---
         const STRATEGY_LOGIC = {
@@ -2059,18 +1953,25 @@
             let avgCount = 0;
 
             try {
-                const results = await fetchCloudResults(200);
-                if (results.length > 0) {
-                    let sumB = 0, sumS = 0, sumR = 0;
-                    results.forEach(r => { 
-                        sumB += (r.budget || 0); 
-                        sumS += (r.schedule || 0); 
-                        sumR += (r.reputation || 0); 
-                    });
-                    industryAvg.budget = sumB / results.length;
-                    industryAvg.schedule = sumS / results.length;
-                    industryAvg.rep = sumR / results.length;
-                    avgCount = results.length;
+                const response = await fetch(LC_API_URL + '?limit=200&order=-createdAt', {
+                    method: 'GET',
+                    headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const results = data.results || [];
+                    if (results.length > 0) {
+                        let sumB = 0, sumS = 0, sumR = 0;
+                        results.forEach(r => { 
+                            sumB += (r.budget || 0); 
+                            sumS += (r.schedule || 0); 
+                            sumR += (r.reputation || 0); 
+                        });
+                        industryAvg.budget = sumB / results.length;
+                        industryAvg.schedule = sumS / results.length;
+                        industryAvg.rep = sumR / results.length;
+                        avgCount = results.length;
+                    }
                 }
             } catch (e) {
                 console.warn("点评数据预加载失败，使用理论中性值", e);
@@ -2245,14 +2146,19 @@
             }
 
             try {
-                const resultData = await saveCloudResult(saveData);
-                currentSessionId = resultData.createdAt;
+                const response = await fetch(LC_API_URL, {
+                    method: 'POST',
+                    headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(saveData)
+                });
+
+                if (!response.ok) throw new Error("HTTP " + response.status);
+                const resultJson = await response.json();
+                currentSessionId = resultJson.objectId;
                 console.log("Save Success, ID:", currentSessionId);
             } catch(e) {
                 console.warn("Data Sync Failed:", e);
-                const networkStatus = document.getElementById('network-status');
-                networkStatus.innerText = `数据同步失败：${e.message}`;
-                networkStatus.style.display = 'block';
+                document.getElementById('network-status').style.display = 'block';
             }
             await fetchAverageData();
         }
@@ -2263,7 +2169,14 @@
             const elSchedule = document.getElementById('avg-schedule');
             const elRep = document.getElementById('avg-rep');
             try {
-                const results = await fetchCloudResults(200, currentSessionId);
+                const response = await fetch(LC_API_URL + '?limit=200&order=-createdAt', {
+                    method: 'GET',
+                    headers: { 'X-LC-Id': LC_APP_ID, 'X-LC-Key': LC_APP_KEY, 'Content-Type': 'application/json' }
+                });
+                if(!response.ok) throw new Error("Fetch Error");
+                const data = await response.json();
+                let results = data.results || [];
+                if (currentSessionId) results = results.filter(r => r.objectId !== currentSessionId);
                 if (results && results.length > 0) {
                     let sumB = 0, sumS = 0, sumR = 0;
                     results.forEach(r => { sumB += (r.budget || 0); sumS += (r.schedule || 0); sumR += (r.reputation || 0); });
@@ -2279,9 +2192,7 @@
                 console.error("Fetch Failed", e);
                 avgLabel.innerText = "⚠️ 离线模式";
                 elBudget.innerText = "本地"; elSchedule.innerText = "本地"; elRep.innerText = "本地";
-                const networkStatus = document.getElementById('network-status');
-                networkStatus.innerText = `数据读取失败：${e.message}`;
-                networkStatus.style.display = 'block';
+                document.getElementById('network-status').style.display = 'block';
             }
             document.getElementById('loading-stats').classList.add('hidden');
         }
