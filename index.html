@@ -1059,12 +1059,12 @@
         // create policy "public game_results insert" on game_results for insert with check (true);
         // create index if not exists game_results_createdAt_idx on game_results("createdAt" desc);
         const SUPABASE_CONFIG = {
-            url: "https://ohfxdcsrxbuedrjcjlez.supabase.co",
+            apiUrl: "https://ohfxdcsrxbuedrjcjlez.supabase.co/rest/v1",
             anonKey: "sb_publishable_CcapO11g3kBjK3h0xYIVfw_Q1Y58WeD",
             table: "game_results"
         };
 
-        const getSupabaseRestUrl = () => `${SUPABASE_CONFIG.url}/rest/v1/${SUPABASE_CONFIG.table}`;
+        const getSupabaseRestUrl = () => `${SUPABASE_CONFIG.apiUrl.replace(/\/$/, '')}/${SUPABASE_CONFIG.table}`;
         const getSupabaseHeaders = (extra = {}) => ({
             apikey: SUPABASE_CONFIG.anonKey,
             'Content-Type': 'application/json',
@@ -1094,10 +1094,10 @@
                 createdAt: new Date().toISOString(),
                 ...saveData
             };
-            const response = await fetch(`${getSupabaseRestUrl()}?select=createdAt`, {
+            const response = await fetch(getSupabaseRestUrl(), {
                 method: 'POST',
                 headers: getSupabaseHeaders({
-                    Prefer: 'return=representation'
+                    Prefer: 'return=minimal'
                 }),
                 body: JSON.stringify(resultRecord)
             });
@@ -1105,9 +1105,61 @@
                 const detail = await response.text();
                 throw new Error(`Supabase insert failed: ${response.status} ${detail}`);
             }
-            const data = await response.json();
-            return data[0];
+            return resultRecord;
         }
+
+        // 修改痕迹 2026-06-09：调试用。浏览器控制台运行 testSupabaseInsert() 可验证 Supabase 是否可写。
+        window.testSupabaseInsert = async function() {
+            const testData = {
+                budget: 0,
+                schedule: 0,
+                reputation: 0,
+                demo_gender: "test",
+                demo_age: "test",
+                demo_work_exp: "test",
+                demo_org_type: "test",
+                demo_position: "test",
+                demo_major: "test",
+                demo_role_pm: "test",
+                demo_role_hse: "test",
+                demo_exp_neg: "test",
+                moralScore: 0,
+                timeScore: 0,
+                esgScore: 0,
+                riskScore: 0,
+                ctx_resource: "test",
+                ctx_sensitivity: "test",
+                exp_group: "test",
+                final_multiplier: 0
+            };
+            for (const prefix of ["raw_moral", "raw_time", "raw_esg", "raw_risk"]) {
+                for (let i = 1; i <= 3; i++) testData[`${prefix}${i}`] = 0;
+            }
+            for (let step = 1; step <= 5; step++) {
+                testData[`d${step}_snap_budget`] = 0;
+                testData[`d${step}_snap_schedule`] = 0;
+                testData[`d${step}_time_remain`] = 0;
+                testData[`d${step}_snap_rep`] = 0;
+                for (const option of ["A", "B"]) {
+                    testData[`d${step}_opt${option}_fail_prob`] = 0;
+                    testData[`d${step}_opt${option}_fail_b`] = 0;
+                    testData[`d${step}_opt${option}_fail_s`] = 0;
+                    testData[`d${step}_opt${option}_fail_r`] = 0;
+                    testData[`d${step}_opt${option}_succ_b`] = 0;
+                    testData[`d${step}_opt${option}_succ_s`] = 0;
+                    testData[`d${step}_opt${option}_succ_r`] = 0;
+                }
+                testData[`d${step}_optC_cost_b`] = 0;
+                testData[`d${step}_optC_cost_s`] = 0;
+                testData[`d${step}_optC_cost_r`] = 0;
+                testData[`d${step}_duration`] = 0;
+                testData[`d${step}_type`] = "test";
+                testData[`d${step}_exposed`] = false;
+            }
+            const result = await saveCloudResult(testData);
+            console.log("Supabase test insert success:", result.createdAt);
+            return result;
+        };
 
         // --- 数值逻辑引擎 ---
         const STRATEGY_LOGIC = {
