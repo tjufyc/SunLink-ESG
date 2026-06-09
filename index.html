@@ -1052,19 +1052,13 @@
 
         // --- Supabase Config ---
         // 修改痕迹 2026-06-09：LeanCloud 将停止使用，用户数据存储迁移到 Supabase。
-        // Supabase 建表 SQL：
-        // create table if not exists game_results (
-        //   id uuid primary key default gen_random_uuid(),
-        //   created_at timestamptz not null default now(),
-        //   budget numeric,
-        //   schedule numeric,
-        //   reputation numeric,
-        //   data jsonb not null
-        // );
+        // 修改痕迹 2026-06-09：参照 GameResult_20260609_202509.csv 的 153 列结构逐列存储。
+        // Supabase 表 game_results 需使用 CSV 同名字段建表，包含 "createdAt"、budget、schedule、reputation、
+        // demo_*、raw_*、*Score、ctx_*、exp_group、final_multiplier 与 d1~d5 决策字段。
         // alter table game_results enable row level security;
         // create policy "public game_results read" on game_results for select using (true);
         // create policy "public game_results insert" on game_results for insert with check (true);
-        // create index if not exists game_results_created_at_idx on game_results(created_at desc);
+        // create index if not exists game_results_createdAt_idx on game_results("createdAt" desc);
         const SUPABASE_CONFIG = {
             url: "https://ohfxdcsrxbuedrjcjlez.supabase.co",
             anonKey: "sb_publishable_CcapO11g3kBjK3h0xYIVfw_Q1Y58WeD",
@@ -1079,10 +1073,10 @@
             if (!supabaseClient) throw new Error("Supabase SDK 未加载");
             let query = supabaseClient
                 .from(SUPABASE_CONFIG.table)
-                .select("id,budget,schedule,reputation,created_at")
-                .order("created_at", { ascending: false })
+                .select("createdAt,budget,schedule,reputation")
+                .order("createdAt", { ascending: false })
                 .limit(limit);
-            if (excludeId) query = query.neq("id", excludeId);
+            if (excludeId) query = query.neq("createdAt", excludeId);
             const { data, error } = await query;
             if (error) throw error;
             return data || [];
@@ -1090,15 +1084,14 @@
 
         async function saveCloudResult(saveData) {
             if (!supabaseClient) throw new Error("Supabase SDK 未加载");
+            const resultRecord = {
+                createdAt: new Date().toISOString(),
+                ...saveData
+            };
             const { data, error } = await supabaseClient
                 .from(SUPABASE_CONFIG.table)
-                .insert({
-                    budget: saveData.budget,
-                    schedule: saveData.schedule,
-                    reputation: saveData.reputation,
-                    data: saveData
-                })
-                .select("id")
+                .insert(resultRecord)
+                .select("createdAt")
                 .single();
             if (error) throw error;
             return data;
@@ -2189,7 +2182,7 @@
 
             try {
                 const resultData = await saveCloudResult(saveData);
-                currentSessionId = resultData.id;
+                currentSessionId = resultData.createdAt;
                 console.log("Save Success, ID:", currentSessionId);
             } catch(e) {
                 console.warn("Data Sync Failed:", e);
