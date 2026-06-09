@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, height=device-height">
     <title>SunLink ESG 管理 | Experiment Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         body { 
@@ -1065,36 +1064,49 @@
             table: "game_results"
         };
 
-        const supabaseClient = window.supabase
-            ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
-            : null;
+        const getSupabaseRestUrl = () => `${SUPABASE_CONFIG.url}/rest/v1/${SUPABASE_CONFIG.table}`;
+        const getSupabaseHeaders = (extra = {}) => ({
+            apikey: SUPABASE_CONFIG.anonKey,
+            'Content-Type': 'application/json',
+            ...extra
+        });
 
         async function fetchCloudResults(limit = 200, excludeId = null) {
-            if (!supabaseClient) throw new Error("Supabase SDK 未加载");
-            let query = supabaseClient
-                .from(SUPABASE_CONFIG.table)
-                .select("createdAt,budget,schedule,reputation")
-                .order("createdAt", { ascending: false })
-                .limit(limit);
-            if (excludeId) query = query.neq("createdAt", excludeId);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data || [];
+            const params = new URLSearchParams({
+                select: 'createdAt,budget,schedule,reputation',
+                order: 'createdAt.desc',
+                limit: String(limit)
+            });
+            if (excludeId) params.set('createdAt', `neq.${excludeId}`);
+            const response = await fetch(`${getSupabaseRestUrl()}?${params.toString()}`, {
+                method: 'GET',
+                headers: getSupabaseHeaders()
+            });
+            if (!response.ok) {
+                const detail = await response.text();
+                throw new Error(`Supabase fetch failed: ${response.status} ${detail}`);
+            }
+            return await response.json();
         }
 
         async function saveCloudResult(saveData) {
-            if (!supabaseClient) throw new Error("Supabase SDK 未加载");
             const resultRecord = {
                 createdAt: new Date().toISOString(),
                 ...saveData
             };
-            const { data, error } = await supabaseClient
-                .from(SUPABASE_CONFIG.table)
-                .insert(resultRecord)
-                .select("createdAt")
-                .single();
-            if (error) throw error;
-            return data;
+            const response = await fetch(`${getSupabaseRestUrl()}?select=createdAt`, {
+                method: 'POST',
+                headers: getSupabaseHeaders({
+                    Prefer: 'return=representation'
+                }),
+                body: JSON.stringify(resultRecord)
+            });
+            if (!response.ok) {
+                const detail = await response.text();
+                throw new Error(`Supabase insert failed: ${response.status} ${detail}`);
+            }
+            const data = await response.json();
+            return data[0];
         }
 
         // --- 数值逻辑引擎 ---
@@ -2186,7 +2198,9 @@
                 console.log("Save Success, ID:", currentSessionId);
             } catch(e) {
                 console.warn("Data Sync Failed:", e);
-                document.getElementById('network-status').style.display = 'block';
+                const networkStatus = document.getElementById('network-status');
+                networkStatus.innerText = `数据同步失败：${e.message}`;
+                networkStatus.style.display = 'block';
             }
             await fetchAverageData();
         }
@@ -2213,7 +2227,9 @@
                 console.error("Fetch Failed", e);
                 avgLabel.innerText = "⚠️ 离线模式";
                 elBudget.innerText = "本地"; elSchedule.innerText = "本地"; elRep.innerText = "本地";
-                document.getElementById('network-status').style.display = 'block';
+                const networkStatus = document.getElementById('network-status');
+                networkStatus.innerText = `数据读取失败：${e.message}`;
+                networkStatus.style.display = 'block';
             }
             document.getElementById('loading-stats').classList.add('hidden');
         }
